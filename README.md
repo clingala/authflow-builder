@@ -14,6 +14,7 @@ Phases 1 and 2 are complete: architecture, application shell, PostgreSQL/Prisma 
 pnpm install
 docker compose up -d
 pnpm db:deploy
+pnpm db:smoke
 pnpm dev
 ```
 

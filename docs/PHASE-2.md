@@ -50,8 +50,11 @@ Completed 2026-09-20.
 - Strict TypeScript checking passes.
 - Eleven unit/security tests pass, including cross-owner access, list scoping, CSRF origin enforcement, stale-version conflicts, size bounds, environment validation, headers, and health contracts.
 - The optimized Next.js production build passes.
+- PostgreSQL 17.11 started successfully in Docker Desktop and the committed migration applied cleanly.
+- The maintained `pnpm db:smoke` test proved real project persistence, version `1 → 2`, two audit events, cross-owner denial with a known project ID, and complete test-data cleanup.
+- Database inspection confirmed eight application tables, one completed migration, and zero residual smoke-test users.
 
-Database-backed migration and browser authentication smoke tests require Docker/PostgreSQL. Docker is not installed on the current host, so they could not be executed here; the repository includes the exact Compose and migration commands for a machine with Docker Desktop.
+The Docker PostgreSQL service is currently healthy on `localhost:5432`. Full browser sign-up/sign-in testing still requires a local `.env.local` containing a private `AUTH_SECRET`; no secret was generated or persisted automatically.
 
 ## Deliberately deferred
 
