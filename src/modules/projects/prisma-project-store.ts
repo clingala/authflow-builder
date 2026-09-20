@@ -144,8 +144,16 @@ export class PrismaProjectStore implements ProjectStore {
     expectedVersion: number,
     config: JsonValue,
     configHash: string,
+    projectMetadata: { name: string; accountType: string },
   ): Promise<SaveConfigResult> {
-    return this.saveConfigTransaction(ownerId, projectId, expectedVersion, config, configHash).catch(async (error) => {
+    return this.saveConfigTransaction(
+      ownerId,
+      projectId,
+      expectedVersion,
+      config,
+      configHash,
+      projectMetadata,
+    ).catch(async (error) => {
       if (!isUniqueConstraintError(error)) throw error;
       const latest = await this.prisma.project.findFirst({
         where: { id: projectId, ownerId, status: "ACTIVE" },
@@ -162,6 +170,7 @@ export class PrismaProjectStore implements ProjectStore {
     expectedVersion: number,
     config: JsonValue,
     configHash: string,
+    projectMetadata: { name: string; accountType: string },
   ): Promise<SaveConfigResult> {
     return this.prisma.$transaction(async (transaction) => {
         const project = await transaction.project.findFirst({
@@ -186,7 +195,11 @@ export class PrismaProjectStore implements ProjectStore {
         });
         const updated = await transaction.project.update({
           where: { id: projectId },
-          data: { activeConfigId: version.id },
+          data: {
+            activeConfigId: version.id,
+            name: projectMetadata.name,
+            accountType: projectMetadata.accountType,
+          },
           include: { activeConfig: true },
         });
         await transaction.auditEvent.create({

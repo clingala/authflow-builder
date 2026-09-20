@@ -46,6 +46,6 @@ export interface ProjectStore {
     expectedVersion: number,
     config: JsonValue,
     configHash: string,
+    projectMetadata: { name: string; accountType: string },
   ): Promise<SaveConfigResult>;
 }
-

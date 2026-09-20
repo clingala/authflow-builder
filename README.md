@@ -2,7 +2,7 @@
 
 AuthFlow Builder is a configuration-driven authentication experience builder for product teams and non-technical owners. The same validated configuration will drive the visual builder, live preview, runtime UI, JSON export, and future ChatGPT tools.
 
-Phases 1 and 2 are complete: architecture, application shell, PostgreSQL/Prisma persistence, Better Auth owner sessions, owner-scoped project APIs, versioned configuration storage, audit events, tests, CI, and VS Code workspace settings.
+Phases 1 through 3 are complete: architecture, application shell, PostgreSQL/Prisma persistence, Better Auth owner sessions, owner-scoped project APIs, versioned configuration storage, audit events, the strict AuthFlow schema, safe defaults, migrations, and reusable templates.
 
 ## Start locally
 
@@ -28,7 +28,7 @@ Owner authentication is available at `/sign-up` and `/sign-in`; authenticated pr
 pnpm check
 ```
 
-Read [the full MVP plan](docs/MVP-PLAN.md) and [the Phase 2 delivery note](docs/PHASE-2.md) before beginning Phase 3.
+Read [the full MVP plan](docs/MVP-PLAN.md), [the Phase 2 delivery note](docs/PHASE-2.md), and [the Phase 3 delivery note](docs/PHASE-3.md). The next implementation stage is Phase 4: the accessible dynamic form renderer.
 
 ## Security posture
 

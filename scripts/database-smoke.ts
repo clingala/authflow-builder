@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { createDefaultAuthFlowConfig } from "../src/modules/auth-config";
 import { getPrisma } from "../src/lib/db/prisma";
 import { PrismaProjectStore } from "../src/modules/projects/prisma-project-store";
 import { ProjectNotFoundError, ProjectService } from "../src/modules/projects/service";
@@ -45,13 +46,11 @@ async function main() {
     }
     if (!crossOwnerDenied) throw new Error("Cross-owner access was not denied");
 
+    const updatedConfig = createDefaultAuthFlowConfig({ appName: "Database Smoke Test", accountType: "Customer" });
+    updatedConfig.labels.loginAction = "Continue";
     const saved = await service.saveConfig(owners[0]!.id, project.id, {
       expectedVersion: 1,
-      config: {
-        schemaVersion: 1,
-        app: { name: "Database Smoke Test", accountType: "Customer" },
-        labels: { login: "Sign In" },
-      },
+      config: updatedConfig,
     });
     const auditCount = await prisma.auditEvent.count({ where: { projectId: project.id } });
 

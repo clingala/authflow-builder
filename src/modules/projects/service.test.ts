@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 
 import { describe, expect, it } from "vitest";
 
+import { createDefaultAuthFlowConfig } from "@/modules/auth-config";
+
 import type {
   CreateProjectRecord,
   JsonValue,
@@ -63,6 +65,8 @@ class MemoryProjectStore implements ProjectStore {
     projectId: string,
     expectedVersion: number,
     config: JsonValue,
+    _configHash: string,
+    projectMetadata: { name: string; accountType: string },
   ): Promise<SaveConfigResult> {
     const project = await this.get(ownerId, projectId);
     if (!project) return { kind: "not_found" };
@@ -71,6 +75,8 @@ class MemoryProjectStore implements ProjectStore {
     }
     project.currentVersion += 1;
     project.config = config;
+    project.name = projectMetadata.name;
+    project.accountType = projectMetadata.accountType;
     return { kind: "saved", project };
   }
 }
@@ -104,19 +110,35 @@ describe("ProjectService configuration versions", () => {
     const store = new MemoryProjectStore();
     const service = new ProjectService(store);
     const project = await service.create("owner-a", { name: "Portal", accountType: "Customer" });
+    const config = createDefaultAuthFlowConfig({ appName: "Portal", accountType: "Customer" });
+    config.labels.loginAction = "Continue";
 
     const saved = await service.saveConfig("owner-a", project.id, {
       expectedVersion: 1,
-      config: { schemaVersion: 1, app: { name: "Portal", accountType: "Customer" }, labels: {} },
+      config,
     });
     expect(saved.currentVersion).toBe(2);
 
     await expect(
       service.saveConfig("owner-a", project.id, {
         expectedVersion: 1,
-        config: { schemaVersion: 1, app: { name: "Outdated", accountType: "Customer" } },
+        config,
       }),
     ).rejects.toEqual(expect.objectContaining({ currentVersion: 2 }));
+  });
+
+  it("keeps project metadata synchronized with the validated configuration", async () => {
+    const store = new MemoryProjectStore();
+    const service = new ProjectService(store);
+    const project = await service.create("owner-a", { name: "Portal", accountType: "Customer" });
+    const config = createDefaultAuthFlowConfig({ appName: "Hiring Hub", accountType: "Applicant" });
+
+    const saved = await service.saveConfig("owner-a", project.id, {
+      expectedVersion: 1,
+      config,
+    });
+
+    expect(saved).toMatchObject({ name: "Hiring Hub", accountType: "Applicant", currentVersion: 2 });
   });
 
   it("rejects configurations over the Phase 2 safety limit", async () => {

@@ -1,5 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 
+import { createDefaultAuthFlowConfig, parseAuthFlowConfig } from "@/modules/auth-config";
+
 import type { JsonValue, ProjectStore, ProjectView } from "./contracts";
 import {
   createProjectSchema,
@@ -59,10 +61,7 @@ function toJsonValue(value: unknown): JsonValue {
 }
 
 function initialConfig(appName: string, accountType: string): JsonValue {
-  return {
-    schemaVersion: 1,
-    app: { name: appName, accountType },
-  };
+  return toJsonValue(createDefaultAuthFlowConfig({ appName, accountType }));
 }
 
 export class ProjectService {
@@ -108,12 +107,16 @@ export class ProjectService {
   async saveConfig(ownerId: string, rawProjectId: string, rawInput: SaveConfigInput): Promise<ProjectView> {
     const projectId = projectIdSchema.parse(rawProjectId);
     const input = saveConfigSchema.parse(rawInput);
-    const config = toJsonValue(input.config);
-    const result = await this.store.saveConfig(ownerId, projectId, input.expectedVersion, config, hashConfig(config));
+    const rawConfig = toJsonValue(input.config);
+    const validatedConfig = parseAuthFlowConfig(rawConfig);
+    const config = toJsonValue(validatedConfig);
+    const result = await this.store.saveConfig(ownerId, projectId, input.expectedVersion, config, hashConfig(config), {
+      name: validatedConfig.app.name,
+      accountType: validatedConfig.app.accountType,
+    });
 
     if (result.kind === "not_found") throw new ProjectNotFoundError();
     if (result.kind === "conflict") throw new ProjectRevisionConflictError(result.currentVersion);
     return result.project;
   }
 }
-
