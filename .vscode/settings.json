@@ -1,0 +1,14 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "workbench.editor.customLabels.patterns": {
+    "**/app/**/page.tsx": "${dirname(1)}/${dirname} - page.tsx",
+    "**/app/**/layout.tsx": "${dirname(1)}/${dirname} - layout.tsx",
+    "**/app/**/route.ts": "${dirname(1)}/${dirname} - route.ts"
+  }
+}
+
