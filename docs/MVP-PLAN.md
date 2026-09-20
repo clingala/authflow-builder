@@ -1,6 +1,6 @@
 # AuthFlow Builder — MVP architecture and implementation plan
 
-Status: accepted foundation plan, 2026-09-19. Phase 1 is implemented in this repository.
+Status: accepted implementation plan, 2026-09-20. Phases 1 and 2 are implemented in this repository.
 
 ## 1. Final MVP feature list
 
@@ -257,4 +257,3 @@ CI gates are lint, strict typecheck, unit/integration tests, production build, m
 - Prisma PostgreSQL quickstart/status: https://www.prisma.io/docs/prisma-orm/quickstart/postgresql
 - Better Auth Next.js integration and server validation warning: https://better-auth.com/docs/integrations/next
 - OpenAI Apps/Plugins authentication: https://developers.openai.com/plugins/build/auth
-

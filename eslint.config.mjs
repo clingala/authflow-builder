@@ -5,7 +5,7 @@ import nextTypeScript from "eslint-config-next/typescript";
 export default defineConfig([
   ...nextVitals,
   ...nextTypeScript,
-  globalIgnores([".next/**", "coverage/**", "node_modules/**"]),
+  globalIgnores([".next/**", "coverage/**", "node_modules/**", "src/generated/prisma/**"]),
   {
     rules: {
       "@typescript-eslint/consistent-type-imports": "error",

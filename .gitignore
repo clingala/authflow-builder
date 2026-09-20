@@ -1,6 +1,7 @@
 node_modules/
 .pnpm-store/
 .next/
+src/generated/prisma/
 coverage/
 dist/
 *.tsbuildinfo

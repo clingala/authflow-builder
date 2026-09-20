@@ -44,9 +44,7 @@ export default function Home() {
           </div>
           <div className="topbar-actions">
             <a className="button secondary" href="/api/health">System health</a>
-            <button className="button primary" type="button" disabled title="Project creation arrives in Phase 2">
-              New project
-            </button>
+            <a className="button primary" href="/sign-up">New project</a>
           </div>
         </header>
 
@@ -56,8 +54,8 @@ export default function Home() {
             <h2 id="hero-title">Build auth that speaks your product&apos;s language.</h2>
             <p>Create secure login, registration, verification, and recovery flows for Customers, Applicants, Members—or any account type you define.</p>
             <div className="hero-actions">
-              <a className="button light" href="#roadmap">View foundation</a>
-              <a className="text-link" href="https://github.com" aria-label="GitHub publishing target">Designed for integration <span aria-hidden="true">→</span></a>
+              <a className="button light" href="/sign-up">Create a workspace</a>
+              <a className="text-link" href="/sign-in">Sign in</a>
             </div>
           </div>
           <div className="config-card" aria-label="Configuration example">
@@ -98,4 +96,3 @@ export default function Home() {
     </div>
   );
 }
-
