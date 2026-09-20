@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createDefaultAuthFlowConfig } from "@/modules/auth-config";
 import type { JsonValue } from "@/modules/projects";
 
-import type { PasswordHasher, RuntimeAuthEventInput, RuntimeAuthStore, RuntimeProject, RuntimeSession, RuntimeUser } from "./contracts";
+import type { PasswordHasher, RuntimeAuthEventInput, RuntimeAuthStore, RuntimeChallenge, RuntimeProject, RuntimeSession, RuntimeUser } from "./contracts";
 import {
   RuntimeAuthService,
   RuntimeInvalidCredentialsError,
@@ -20,9 +20,11 @@ class MemoryStore implements RuntimeAuthStore {
   sessions: Array<RuntimeSession & { tokenHash: string }> = [];
   events: RuntimeAuthEventInput[] = [];
   limits = new Map<string, { count: number; expiresAt: Date }>();
+  challenges: RuntimeChallenge[] = [];
 
   async getProject(projectId: string) { return this.projects.get(projectId) ?? null; }
   async findUserByEmail(projectId: string, email: string) { return this.users.find((user) => user.projectId === projectId && user.email === email) ?? null; }
+  async findUserByPhone(projectId: string, phone: string) { return this.users.find((user) => user.projectId === projectId && (user.profile as Record<string, unknown>).phone === phone) ?? null; }
   async createUser(input: { projectId: string; email: string; passwordHash: string; profile: JsonValue }) {
     if (await this.findUserByEmail(input.projectId, input.email)) return null;
     const user: RuntimeUser = { id: `user-${this.users.length + 1}`, ...input, emailVerified: false, phoneVerified: false };
@@ -53,6 +55,17 @@ class MemoryStore implements RuntimeAuthStore {
     return true;
   }
   async markLogin() {}
+  async createChallenge(input: Omit<RuntimeChallenge, "id" | "attempts" | "resendCount" | "consumedAt">) {
+    const challenge: RuntimeChallenge = { id: `challenge-${this.challenges.length + 1}`, ...input, attempts: 0, resendCount: 0, consumedAt: null };
+    this.challenges.push(challenge);
+    return challenge;
+  }
+  async invalidateActiveChallenges(input: { projectId: string; runtimeUserId: string; purpose: RuntimeChallenge["purpose"]; now: Date }) { for (const challenge of this.challenges) if (challenge.projectId === input.projectId && challenge.runtimeUserId === input.runtimeUserId && challenge.purpose === input.purpose && !challenge.consumedAt) challenge.consumedAt = input.now; }
+  async findActiveChallenge(input: { projectId: string; purpose: RuntimeChallenge["purpose"]; targetHash: string; now: Date }) { return this.challenges.findLast((challenge) => challenge.projectId === input.projectId && challenge.purpose === input.purpose && challenge.targetHash === input.targetHash && !challenge.consumedAt && challenge.expiresAt > input.now) ?? null; }
+  async incrementChallengeAttempt(id: string) { const challenge = this.challenges.find((item) => item.id === id); if (challenge) challenge.attempts += 1; }
+  async consumeChallenge(id: string, now: Date) { const challenge = this.challenges.find((item) => item.id === id && !item.consumedAt && item.expiresAt > now); if (!challenge) return false; challenge.consumedAt = now; return true; }
+  async setVerified(userId: string, channel: "email" | "phone") { const user = this.users.find((item) => item.id === userId); if (user && channel === "email") user.emailVerified = true; if (user && channel === "phone") user.phoneVerified = true; }
+  async updatePasswordAndRevokeSessions(userId: string, passwordHash: string, at: Date) { const user = this.users.find((item) => item.id === userId); if (user) user.passwordHash = passwordHash; for (const session of this.sessions) if (session.userId === userId && !session.revokedAt) session.revokedAt = at; }
   async recordEvent(input: RuntimeAuthEventInput) { this.events.push(input); }
   async consumeRateLimit(input: { keyHash: string; limit: number; windowSeconds: number; now: Date }) {
     const existing = this.limits.get(input.keyHash);

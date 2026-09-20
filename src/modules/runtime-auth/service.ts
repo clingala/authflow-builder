@@ -11,7 +11,9 @@ export class RuntimeProjectNotFoundError extends Error {}
 export class RuntimeUnsupportedConfigError extends Error {}
 export class RuntimeAccountExistsError extends Error {}
 export class RuntimeInvalidCredentialsError extends Error {}
-export class RuntimeVerificationRequiredError extends Error {}
+export class RuntimeVerificationRequiredError extends Error {
+  constructor(public readonly channels: Array<"email" | "phone">) { super("Account verification is required"); }
+}
 export class RuntimeRateLimitedError extends Error {
   constructor(public readonly retryAfterSeconds: number) { super("Too many requests"); }
 }
@@ -24,6 +26,10 @@ function publicUser(user: RuntimeUser) {
 
 function requiresVerification(config: AuthFlowConfig, user: Pick<RuntimeUser, "emailVerified" | "phoneVerified">) {
   return (config.verification.email.enabled && !user.emailVerified) || (config.verification.phone.enabled && !user.phoneVerified);
+}
+
+function requiredVerificationChannels(config: AuthFlowConfig, user: Pick<RuntimeUser, "emailVerified" | "phoneVerified">) {
+  return [config.verification.email.enabled && !user.emailVerified ? "email" : null, config.verification.phone.enabled && !user.phoneVerified ? "phone" : null].filter((value): value is "email" | "phone" => value !== null);
 }
 
 function ensureEmailPassword(config: AuthFlowConfig) {
@@ -69,7 +75,7 @@ export class RuntimeAuthService {
 
     if (requiresVerification(project.config, user)) {
       await this.store.recordEvent({ projectId: project.id, runtimeUserId: user.id, eventType: "runtime.signup", outcome: "success", ipHash: context.ipHash, metadata: { verificationRequired: true } });
-      return { user: publicUser(user), verificationRequired: true, session: null };
+      return { user: publicUser(user), verificationRequired: true, verificationChannels: requiredVerificationChannels(project.config, user), session: null };
     }
 
     const session = await this.issueSession(project.id, user, context);
@@ -93,7 +99,7 @@ export class RuntimeAuthService {
     }
     if (requiresVerification(project.config, user)) {
       await this.store.recordEvent({ projectId: project.id, runtimeUserId: user.id, eventType: "runtime.signin", outcome: "blocked", ipHash: context.ipHash, metadata: { reason: "verification_required" } });
-      throw new RuntimeVerificationRequiredError();
+      throw new RuntimeVerificationRequiredError(requiredVerificationChannels(project.config, user));
     }
 
     const session = await this.issueSession(project.id, user, context);

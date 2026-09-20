@@ -4,8 +4,11 @@ import { readAuthEnvironment } from "@/lib/env/runtime";
 import { betterAuthPasswordHasher } from "./password";
 import { PrismaRuntimeAuthStore } from "./prisma-runtime-auth-store";
 import { RuntimeAuthService } from "./service";
+import { RuntimeChallengeService } from "./challenge-service";
+import { DisabledDeliveryAdapter, HttpDeliveryAdapter } from "./delivery";
 
 let service: RuntimeAuthService | undefined;
+let challengeService: RuntimeChallengeService | undefined;
 
 export function getRuntimeAuthService() {
   service ??= new RuntimeAuthService(
@@ -14,6 +17,19 @@ export function getRuntimeAuthService() {
     readAuthEnvironment().AUTH_SECRET,
   );
   return service;
+}
+
+export function getRuntimeChallengeService() {
+  const environment = readAuthEnvironment();
+  const store = new PrismaRuntimeAuthStore(getPrisma());
+  const endpoint = process.env.AUTHFLOW_DELIVERY_WEBHOOK_URL;
+  const token = process.env.AUTHFLOW_DELIVERY_WEBHOOK_SECRET;
+  if (endpoint && process.env.NODE_ENV === "production" && !endpoint.startsWith("https://")) {
+    throw new Error("AUTHFLOW_DELIVERY_WEBHOOK_URL must use HTTPS in production.");
+  }
+  const delivery = endpoint && token ? new HttpDeliveryAdapter(endpoint, token) : new DisabledDeliveryAdapter();
+  challengeService ??= new RuntimeChallengeService(store, betterAuthPasswordHasher, delivery, environment.AUTH_SECRET, environment.APP_URL);
+  return challengeService;
 }
 
 export {
@@ -28,4 +44,12 @@ export {
   RuntimeVerificationRequiredError,
 } from "./service";
 export { validateRegistration } from "./validation";
+export {
+  RuntimeChallengeAttemptsExceededError,
+  RuntimeChallengeExpiredError,
+  RuntimeChallengeInvalidError,
+  RuntimeChallengeService,
+  RuntimeMethodUnavailableError,
+} from "./challenge-service";
+export { RuntimeDeliveryUnavailableError } from "./delivery";
 export type { PasswordHasher, RuntimeAuthStore, RuntimeSession, RuntimeUser } from "./contracts";

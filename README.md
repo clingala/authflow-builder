@@ -24,7 +24,7 @@ The standalone authentication renderer preview is available at `http://localhost
 
 Owner authentication is available at `/sign-up` and `/sign-in`; authenticated project management is at `/dashboard`.
 
-Each active project has a real hosted authentication page at `/auth/:projectId`. Phase 7 supports project-scoped email/password signup, sign-in, session validation, and sign-out. Verification and recovery delivery remain intentionally unavailable until Phase 8.
+Each active project has a real hosted authentication page at `/auth/:projectId`. It supports project-scoped email/password signup, sign-in, session validation, sign-out, email/phone verification challenges, and password recovery. Delivery is enabled only when the server-side webhook adapter is configured; the application never reports fake delivery success.
 
 ## Quality gate
 
@@ -32,7 +32,7 @@ Each active project has a real hosted authentication page at `/auth/:projectId`.
 pnpm check
 ```
 
-Read [the full MVP plan](docs/MVP-PLAN.md) and the [Phase 7 delivery note](docs/PHASE-7.md). The next implementation stage is Phase 8: verification and account-recovery challenges, delivery adapters, and token lifecycle controls.
+Read [the full MVP plan](docs/MVP-PLAN.md), the [Phase 7 delivery note](docs/PHASE-7.md), and the [Phase 8 delivery note](docs/PHASE-8.md). The next implementation stage is Phase 9: real Google OAuth using state, PKCE, and server-only credentials.
 
 ## Security posture
 

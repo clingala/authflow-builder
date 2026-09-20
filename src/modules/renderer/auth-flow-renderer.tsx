@@ -6,7 +6,7 @@ import type { AuthFlowConfig, RegistrationField } from "@/modules/auth-config";
 
 import { FieldRenderer } from "./field-renderer";
 
-export type AuthFlowScreen = "login" | "signup" | "verification" | "recovery";
+export type AuthFlowScreen = "login" | "signup" | "verification" | "recovery" | "recoveryReset";
 type SocialProvider = keyof AuthFlowConfig["login"]["socialProviders"];
 
 export type AuthFlowRendererProps = {
@@ -109,7 +109,7 @@ function SignupScreen({ config, errors, onNavigate, onSocialLogin }: Pick<AuthFl
   );
 }
 
-function RecoveryScreen({ config, onNavigate }: Pick<AuthFlowRendererProps, "config" | "onNavigate">) {
+function RecoveryScreen({ config, errors, onNavigate }: Pick<AuthFlowRendererProps, "config" | "errors" | "onNavigate">) {
   const usePhone = config.recovery.methods.length === 1 && config.recovery.methods[0] === "phone_otp";
   const field: RegistrationField = usePhone
     ? { id: "recovery_identifier", label: "Phone Number", type: "phone", required: true, width: "full", autocomplete: "tel" }
@@ -118,14 +118,14 @@ function RecoveryScreen({ config, onNavigate }: Pick<AuthFlowRendererProps, "con
   return (
     <>
       <ScreenHeading title={config.labels.recoveryTitle} description="Enter your account details. If a matching account exists, recovery instructions will be sent." />
-      <div className="authflow-form-grid"><FieldRenderer field={field} passwordPolicy={config.passwordPolicy} /></div>
+      <div className="authflow-form-grid"><FieldRenderer field={field} passwordPolicy={config.passwordPolicy} error={errors?.recovery_identifier} /></div>
       <SubmitButton config={config}>Send Recovery Instructions</SubmitButton>
       <ScreenSwitch text={`Return to ${config.labels.loginAction}`} target="login" onNavigate={onNavigate} />
     </>
   );
 }
 
-function VerificationScreen({ config, onNavigate }: Pick<AuthFlowRendererProps, "config" | "onNavigate">) {
+function VerificationScreen({ config, errors, onNavigate }: Pick<AuthFlowRendererProps, "config" | "errors" | "onNavigate">) {
   const channels = [config.verification.email.enabled ? "email" : null, config.verification.phone.enabled ? "phone" : null].filter(Boolean);
   const needsOtp = config.verification.phone.enabled || (config.verification.email.enabled && config.verification.email.method === "otp");
   const codeField: RegistrationField = {
@@ -147,7 +147,7 @@ function VerificationScreen({ config, onNavigate }: Pick<AuthFlowRendererProps, 
       />
       {needsOtp ? (
         <>
-          <div className="authflow-form-grid"><FieldRenderer field={codeField} passwordPolicy={config.passwordPolicy} /></div>
+          <div className="authflow-form-grid"><FieldRenderer field={codeField} passwordPolicy={config.passwordPolicy} error={errors?.verification_code} /></div>
           <p className="authflow-cooldown">Codes expire after {Math.round(config.verification.otp.ttlSeconds / 60)} minutes. Resend is available after {config.verification.otp.resendCooldownSeconds} seconds.</p>
           <SubmitButton config={config}>Verify Account</SubmitButton>
         </>
@@ -155,6 +155,20 @@ function VerificationScreen({ config, onNavigate }: Pick<AuthFlowRendererProps, 
       <ScreenSwitch text={`Return to ${config.labels.loginAction}`} target="login" onNavigate={onNavigate} />
     </>
   );
+}
+
+function RecoveryResetScreen({ config, errors, onNavigate }: Pick<AuthFlowRendererProps, "config" | "errors" | "onNavigate">) {
+  const fields: RegistrationField[] = [
+    { id: "recovery_secret", label: "Recovery Code", type: "text", required: true, width: "full", autocomplete: "off" },
+    { id: "recovery_password", label: "New Password", type: "password", required: true, width: "full", autocomplete: "new-password", validation: { minLength: config.passwordPolicy.minLength, maxLength: config.passwordPolicy.maxLength } },
+    { id: "recovery_confirm_password", label: "Confirm New Password", type: "password", required: true, width: "full", autocomplete: "new-password" },
+  ];
+  return <>
+    <ScreenHeading title={config.labels.recoveryTitle} description="Enter the code or token you received and choose a new password." />
+    <div className="authflow-form-grid">{fields.map((field) => <FieldRenderer key={field.id} field={field} passwordPolicy={config.passwordPolicy} error={errors?.[field.id]} />)}</div>
+    <SubmitButton config={config}>Reset Password</SubmitButton>
+    <ScreenSwitch text={`Return to ${config.labels.loginAction}`} target="login" onNavigate={onNavigate} />
+  </>;
 }
 
 export function AuthFlowRenderer({ config, screen, errors, submitting = false, onSubmit, onNavigate, onSocialLogin }: AuthFlowRendererProps) {
@@ -186,8 +200,9 @@ export function AuthFlowRenderer({ config, screen, errors, submitting = false, o
         <form onSubmit={submit} noValidate={false} aria-busy={submitting}>
           {screen === "login" ? <LoginScreen config={config} errors={errors} onNavigate={onNavigate} onSocialLogin={onSocialLogin} /> : null}
           {screen === "signup" ? <SignupScreen config={config} errors={errors} onNavigate={onNavigate} onSocialLogin={onSocialLogin} /> : null}
-          {screen === "recovery" ? <RecoveryScreen config={config} onNavigate={onNavigate} /> : null}
-          {screen === "verification" ? <VerificationScreen config={config} onNavigate={onNavigate} /> : null}
+          {screen === "recovery" ? <RecoveryScreen config={config} errors={errors} onNavigate={onNavigate} /> : null}
+          {screen === "verification" ? <VerificationScreen config={config} errors={errors} onNavigate={onNavigate} /> : null}
+          {screen === "recoveryReset" ? <RecoveryResetScreen config={config} errors={errors} onNavigate={onNavigate} /> : null}
           {submitting ? <span className="authflow-sr-only" role="status">Submitting</span> : null}
         </form>
       </div>

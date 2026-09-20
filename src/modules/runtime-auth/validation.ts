@@ -8,6 +8,22 @@ export const signInSchema = z.object({ email: z.string().trim().email().max(254)
 export const signUpSchema = z.object({
   fields: z.record(z.string(), z.unknown()).refine((fields) => Object.keys(fields).length <= 50, "Too many registration fields"),
 }).strict();
+export const verificationRequestSchema = z.object({
+  identifier: z.string().trim().min(1).max(254),
+  channel: z.enum(["email", "phone"]),
+}).strict();
+export const verificationConfirmSchema = verificationRequestSchema.extend({ secret: z.string().trim().min(4).max(256) }).strict();
+export const recoveryRequestSchema = z.object({
+  identifier: z.string().trim().min(1).max(254),
+  method: z.enum(["email_link", "email_otp", "phone_otp"]),
+}).strict();
+export const recoveryResetSchema = z.object({
+  identifier: z.string().trim().min(1).max(254),
+  method: z.enum(["email_link", "email_otp", "phone_otp"]),
+  secret: z.string().trim().min(4).max(256),
+  password: z.string().min(1).max(256),
+  confirmPassword: z.string().min(1).max(256),
+}).strict();
 
 const patterns: Record<string, RegExp> = {
   person_name: /^[\p{L}\p{M} .'-]+$/u,
@@ -24,6 +40,17 @@ export class RegistrationValidationError extends Error {
   constructor(public readonly issues: Record<string, string>) {
     super("Registration fields are invalid");
   }
+}
+
+export function validatePassword(policy: AuthFlowConfig["passwordPolicy"], password: string, confirmation: string) {
+  const issues: Record<string, string> = {};
+  if (password.length < policy.minLength || password.length > policy.maxLength) issues.password = `Password must be ${policy.minLength}–${policy.maxLength} characters.`;
+  if (policy.requireUppercase && !/[A-Z]/.test(password)) issues.password = "Password must include an uppercase letter.";
+  if (policy.requireLowercase && !/[a-z]/.test(password)) issues.password = "Password must include a lowercase letter.";
+  if (policy.requireNumber && !/[0-9]/.test(password)) issues.password = "Password must include a number.";
+  if (policy.requireSpecial && !/[^A-Za-z0-9]/.test(password)) issues.password = "Password must include a special character.";
+  if (policy.requireConfirmation && password !== confirmation) issues.confirmPassword = "Passwords do not match.";
+  if (Object.keys(issues).length) throw new RegistrationValidationError(issues);
 }
 
 type TextRegistrationField = Extract<RegistrationField, { type: "text" | "email" | "phone" | "password" | "textarea" }>;
@@ -86,13 +113,17 @@ export function validateRegistration(config: AuthFlowConfig, rawFields: Record<s
     else profile[field.id] = value;
   }
 
-  const policy = config.passwordPolicy;
-  if (password.length < policy.minLength || password.length > policy.maxLength) issues.password = `Password must be ${policy.minLength}–${policy.maxLength} characters.`;
-  if (policy.requireUppercase && !/[A-Z]/.test(password)) issues.password = "Password must include an uppercase letter.";
-  if (policy.requireLowercase && !/[a-z]/.test(password)) issues.password = "Password must include a lowercase letter.";
-  if (policy.requireNumber && !/[0-9]/.test(password)) issues.password = "Password must include a number.";
-  if (policy.requireSpecial && !/[^A-Za-z0-9]/.test(password)) issues.password = "Password must include a special character.";
-  if (policy.requireConfirmation && password !== confirmation) issues.confirm_password = "Passwords do not match.";
+  try {
+    validatePassword(config.passwordPolicy, password, confirmation);
+  } catch (error) {
+    if (error instanceof RegistrationValidationError) {
+      Object.assign(issues, error.issues);
+      if (issues.confirmPassword) {
+        issues.confirm_password = issues.confirmPassword;
+        delete issues.confirmPassword;
+      }
+    }
+  }
   if (!z.string().email().safeParse(email).success) issues.email = "Enter a valid email address.";
 
   if (Object.keys(issues).length) throw new RegistrationValidationError(issues);

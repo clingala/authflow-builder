@@ -3,7 +3,7 @@ import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 import { parseAuthFlowConfig } from "@/modules/auth-config";
 import type { JsonValue } from "@/modules/projects";
 
-import type { RuntimeAuthEventInput, RuntimeAuthStore, RuntimeSession, RuntimeUser } from "./contracts";
+import type { RuntimeAuthEventInput, RuntimeAuthStore, RuntimeChallenge, RuntimeSession, RuntimeUser } from "./contracts";
 
 function jsonValue(value: Prisma.JsonValue): JsonValue {
   return value as JsonValue;
@@ -55,6 +55,11 @@ export class PrismaRuntimeAuthStore implements RuntimeAuthStore {
     return user ? mapUser(user) : null;
   }
 
+  async findUserByPhone(projectId: string, phone: string) {
+    const user = await this.prisma.runtimeUser.findFirst({ where: { projectId, profile: { path: ["phone"], equals: phone } } });
+    return user ? mapUser(user) : null;
+  }
+
   async createUser(input: { projectId: string; email: string; passwordHash: string; profile: JsonValue }) {
     try {
       const user = await this.prisma.runtimeUser.create({
@@ -93,6 +98,41 @@ export class PrismaRuntimeAuthStore implements RuntimeAuthStore {
 
   async markLogin(userId: string, at: Date) {
     await this.prisma.runtimeUser.update({ where: { id: userId }, data: { lastLoginAt: at } });
+  }
+
+  async createChallenge(input: { projectId: string; runtimeUserId: string; purpose: "verify_email" | "verify_phone" | "recover_password"; channel: "email_link" | "email_otp" | "phone_otp"; targetHash: string; secretHash: string; expiresAt: Date; nextResendAt: Date }) {
+    return this.prisma.runtimeChallenge.create({ data: input }) as Promise<RuntimeChallenge>;
+  }
+
+  async invalidateActiveChallenges(input: { projectId: string; runtimeUserId: string; purpose: "verify_email" | "verify_phone" | "recover_password"; now: Date }) {
+    await this.prisma.runtimeChallenge.updateMany({ where: { projectId: input.projectId, runtimeUserId: input.runtimeUserId, purpose: input.purpose, consumedAt: null }, data: { consumedAt: input.now } });
+  }
+
+  async findActiveChallenge(input: { projectId: string; purpose: "verify_email" | "verify_phone" | "recover_password"; targetHash: string; now: Date }) {
+    return this.prisma.runtimeChallenge.findFirst({
+      where: { projectId: input.projectId, purpose: input.purpose, targetHash: input.targetHash, consumedAt: null, expiresAt: { gt: input.now } },
+      orderBy: { createdAt: "desc" },
+    }) as Promise<RuntimeChallenge | null>;
+  }
+
+  async incrementChallengeAttempt(id: string) {
+    await this.prisma.runtimeChallenge.update({ where: { id }, data: { attempts: { increment: 1 } } });
+  }
+
+  async consumeChallenge(id: string, now: Date) {
+    const result = await this.prisma.runtimeChallenge.updateMany({ where: { id, consumedAt: null, expiresAt: { gt: now } }, data: { consumedAt: now } });
+    return result.count === 1;
+  }
+
+  async setVerified(userId: string, channel: "email" | "phone") {
+    await this.prisma.runtimeUser.update({ where: { id: userId }, data: channel === "email" ? { emailVerified: true } : { phoneVerified: true } });
+  }
+
+  async updatePasswordAndRevokeSessions(userId: string, passwordHash: string, at: Date) {
+    await this.prisma.$transaction([
+      this.prisma.runtimeUser.update({ where: { id: userId }, data: { passwordHash } }),
+      this.prisma.runtimeSession.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: at } }),
+    ]);
   }
 
   async recordEvent(input: RuntimeAuthEventInput) {

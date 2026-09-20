@@ -3,7 +3,7 @@ import { createHmac } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { ZodError } from "zod";
 
-import { requireSameOrigin } from "@/app/api/v1/_shared";
+import { ForbiddenError, requireSameOrigin } from "@/app/api/v1/_shared";
 import { readAuthEnvironment } from "@/lib/env/runtime";
 import {
   RegistrationValidationError,
@@ -13,6 +13,11 @@ import {
   RuntimeRateLimitedError,
   RuntimeUnsupportedConfigError,
   RuntimeVerificationRequiredError,
+  RuntimeChallengeAttemptsExceededError,
+  RuntimeChallengeExpiredError,
+  RuntimeChallengeInvalidError,
+  RuntimeDeliveryUnavailableError,
+  RuntimeMethodUnavailableError,
   type RuntimeRequestContext,
 } from "@/modules/runtime-auth";
 
@@ -57,11 +62,17 @@ export function clearRuntimeSessionCookie(response: NextResponse, projectId: str
 }
 
 export function runtimeErrorResponse(error: unknown) {
+  if (error instanceof ForbiddenError) return errorJson(403, "FORBIDDEN", "The request origin is not allowed");
   if (error instanceof RuntimeProjectNotFoundError) return errorJson(404, "NOT_FOUND", "Authentication project not found");
   if (error instanceof RuntimeUnsupportedConfigError) return errorJson(409, "UNSUPPORTED_CONFIGURATION", "This project is not configured for email and password authentication");
   if (error instanceof RuntimeAccountExistsError) return errorJson(409, "ACCOUNT_EXISTS", "An account already exists with that email address");
   if (error instanceof RuntimeInvalidCredentialsError) return errorJson(401, "INVALID_CREDENTIALS", "The email or password is incorrect");
-  if (error instanceof RuntimeVerificationRequiredError) return errorJson(403, "VERIFICATION_REQUIRED", "Account verification is required");
+  if (error instanceof RuntimeVerificationRequiredError) return NextResponse.json({ data: null, error: { code: "VERIFICATION_REQUIRED", message: "Account verification is required", channels: error.channels } }, { status: 403 });
+  if (error instanceof RuntimeDeliveryUnavailableError) return errorJson(503, "DELIVERY_UNAVAILABLE", "Email or SMS delivery is not configured for this installation");
+  if (error instanceof RuntimeMethodUnavailableError) return errorJson(409, "METHOD_UNAVAILABLE", "That verification or recovery method is not available");
+  if (error instanceof RuntimeChallengeExpiredError) return errorJson(400, "CHALLENGE_EXPIRED", "The code or link has expired. Request a new one.");
+  if (error instanceof RuntimeChallengeAttemptsExceededError) return errorJson(429, "ATTEMPTS_EXCEEDED", "Too many incorrect attempts. Request a new code or link.");
+  if (error instanceof RuntimeChallengeInvalidError) return errorJson(400, "INVALID_CHALLENGE", "The code or link is invalid");
   if (error instanceof RuntimeRateLimitedError) {
     return NextResponse.json(
       { data: null, error: { code: "RATE_LIMITED", message: "Too many attempts. Try again later.", retryAfterSeconds: error.retryAfterSeconds } },
