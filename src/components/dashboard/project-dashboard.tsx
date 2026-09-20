@@ -52,7 +52,10 @@ export function ProjectDashboard({ ownerName, initialProjects }: { ownerName: st
     <main className="dashboard-screen">
       <header className="dashboard-header">
         <div><p className="eyebrow">Owner workspace</p><h1>{ownerName}&apos;s projects</h1></div>
-        <button className="button secondary" type="button" onClick={signOut}>Sign out</button>
+        <div className="topbar-actions">
+          <a className="button secondary" href="/preview">Renderer preview</a>
+          <button className="button secondary" type="button" onClick={signOut}>Sign out</button>
+        </div>
       </header>
       <section className="create-project" aria-labelledby="create-title">
         <div><p className="eyebrow">New project</p><h2 id="create-title">Start an authentication flow</h2></div>
@@ -83,4 +86,3 @@ export function ProjectDashboard({ ownerName, initialProjects }: { ownerName: st
     </main>
   );
 }
-

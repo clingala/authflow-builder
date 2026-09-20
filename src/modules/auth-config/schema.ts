@@ -53,7 +53,7 @@ const choiceSchema = z
   })
   .strict();
 
-function textField(type: "text" | "email" | "phone" | "password" | "textarea") {
+function textField<const T extends "text" | "email" | "phone" | "password" | "textarea">(type: T) {
   return z
     .object({
       ...commonFieldShape,
@@ -68,6 +68,7 @@ function textField(type: "text" | "email" | "phone" | "password" | "textarea") {
           "username",
           "email",
           "tel",
+          "current-password",
           "new-password",
           "street-address",
           "address-line1",
@@ -104,7 +105,7 @@ const dateFieldSchema = z
   })
   .strict();
 
-function choiceField(type: "dropdown" | "radio") {
+function choiceField<const T extends "dropdown" | "radio">(type: T) {
   return z
     .object({
       ...commonFieldShape,
@@ -123,7 +124,7 @@ function choiceField(type: "dropdown" | "radio") {
     });
 }
 
-function booleanField(type: "checkbox" | "boolean") {
+function booleanField<const T extends "checkbox" | "boolean">(type: T) {
   return z.object({ ...commonFieldShape, type: z.literal(type), defaultValue: z.boolean().optional() }).strict();
 }
 
@@ -330,4 +331,3 @@ export const authFlowConfigSchema = z
 
 export type AuthFlowConfig = z.infer<typeof authFlowConfigSchema>;
 export type RegistrationField = z.infer<typeof registrationFieldSchema>;
-

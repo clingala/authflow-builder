@@ -7,8 +7,9 @@ const navigation = [
 
 const phases = [
   { name: "Foundation", detail: "Architecture, tooling, and security baseline", state: "Complete" },
-  { name: "Project data", detail: "Owner-scoped projects and version-ready config", state: "Next" },
-  { name: "Config engine", detail: "Validated schema and dynamic form contracts", state: "Planned" },
+  { name: "Project data", detail: "Owner-scoped projects and version-ready config", state: "Complete" },
+  { name: "Config engine", detail: "Validated schema and dynamic form contracts", state: "Complete" },
+  { name: "Dynamic renderer", detail: "Accessible, responsive authentication screens", state: "Complete" },
 ];
 
 export default function Home() {
@@ -44,6 +45,7 @@ export default function Home() {
           </div>
           <div className="topbar-actions">
             <a className="button secondary" href="/api/health">System health</a>
+            <a className="button secondary" href="/preview">Renderer preview</a>
             <a className="button primary" href="/sign-up">New project</a>
           </div>
         </header>
@@ -74,7 +76,7 @@ export default function Home() {
         <section id="roadmap" className="section-block" aria-labelledby="roadmap-title">
           <div className="section-heading">
             <div><p className="eyebrow">Build status</p><h2 id="roadmap-title">A production foundation, built in phases</h2></div>
-            <span className="phase-counter">01 / 15</span>
+            <span className="phase-counter">04 / 15</span>
           </div>
           <div className="phase-grid">
             {phases.map((phase, index) => (
