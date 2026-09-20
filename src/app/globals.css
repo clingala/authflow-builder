@@ -250,6 +250,13 @@ button:focus-visible, a:focus-visible { outline: 3px solid #2d7d61; outline-offs
 .builder-recovery span, .builder-conflict-actions span { color: #55645f; font-size: 11px; }
 .builder-recovery .button, .builder-conflict-actions .button { min-height: 34px; padding: 7px 12px; font-size: 11px; }
 .builder-conflict-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #efcaca; }
+.runtime-auth-shell { min-height: 100vh; display: grid; place-items: center; padding: 32px 18px; }
+.runtime-auth-frame { width: min(100%, 680px); display: grid; gap: 12px; }
+.runtime-auth-message { padding: 11px 14px; border: 1px solid #c8ded4; border-radius: 10px; background: #edf7f2; color: #173d31; font-size: 13px; text-align: center; }
+.runtime-session-card { width: min(100%, 480px); display: grid; justify-items: center; gap: 12px; padding: 42px; border: 1px solid rgba(21, 33, 28, .12); border-radius: 18px; background: white; box-shadow: 0 24px 70px rgba(20, 40, 31, .12); text-align: center; }
+.runtime-session-card > span { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #dff1e8; color: #173d31; font-size: 24px; }
+.runtime-session-card h1, .runtime-session-card p { margin: 0; }
+.runtime-session-card .button { width: 100%; }
 .auth-builder-workspace { min-height: 0; display: grid; grid-template-columns: 340px minmax(480px, 1fr) 300px; }
 .builder-sidebar, .builder-properties { min-width: 0; background: white; }
 .builder-sidebar { display: grid; grid-template-rows: auto minmax(0, 1fr); border-right: 1px solid var(--line); }

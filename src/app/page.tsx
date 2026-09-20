@@ -12,6 +12,7 @@ const phases = [
   { name: "Dynamic renderer", detail: "Accessible, responsive authentication screens", state: "Complete" },
   { name: "Visual builder", detail: "Typed controls, field editing, and persisted live preview", state: "Complete" },
   { name: "Preview workflow", detail: "Recoverable drafts and safe revision-conflict handling", state: "Complete" },
+  { name: "Authentication runtime", detail: "Tenant-scoped email/password identities and sessions", state: "Complete" },
 ];
 
 export default function Home() {
@@ -35,7 +36,7 @@ export default function Home() {
 
         <div className="sidebar-note">
           <span className="status-dot" aria-hidden="true" />
-          <div><strong>Phase 6 ready</strong><small>Draft recovery verified locally</small></div>
+          <div><strong>Phase 7 ready</strong><small>Runtime authentication verified locally</small></div>
         </div>
       </aside>
 
@@ -78,7 +79,7 @@ export default function Home() {
         <section id="roadmap" className="section-block" aria-labelledby="roadmap-title">
           <div className="section-heading">
             <div><p className="eyebrow">Build status</p><h2 id="roadmap-title">A production foundation, built in phases</h2></div>
-            <span className="phase-counter">06 / 15</span>
+            <span className="phase-counter">07 / 15</span>
           </div>
           <div className="phase-grid">
             {phases.map((phase, index) => (

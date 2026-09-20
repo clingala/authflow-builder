@@ -94,6 +94,10 @@ model Project {
   configVersions AuthConfigVersion[] @relation("ProjectConfigs")
   activeConfig   AuthConfigVersion?  @relation("ActiveProjectConfig", fields: [activeConfigId], references: [id], onDelete: SetNull)
   auditEvents    AuditEvent[]
+  runtimeUsers   RuntimeUser[]
+  runtimeSessions RuntimeSession[]
+  runtimeAuthEvents RuntimeAuthEvent[]
+  runtimeRateLimits RuntimeRateLimit[]
 
   @@unique([ownerId, slug])
   @@index([ownerId, status, updatedAt])
@@ -135,4 +139,78 @@ model AuditEvent {
   @@index([actorId, createdAt])
   @@index([projectId, createdAt])
   @@map("audit_events")
+}
+
+model RuntimeUser {
+  id            String    @id @default(uuid()) @db.Uuid
+  projectId     String    @db.Uuid
+  email         String    @db.VarChar(254)
+  passwordHash  String    @db.Text
+  emailVerified Boolean   @default(false)
+  phoneVerified Boolean   @default(false)
+  profile       Json
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  project  Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sessions RuntimeSession[]
+  events   RuntimeAuthEvent[]
+
+  @@unique([projectId, email])
+  @@index([projectId, createdAt])
+  @@map("runtime_users")
+}
+
+model RuntimeSession {
+  id         String    @id @default(uuid()) @db.Uuid
+  projectId  String    @db.Uuid
+  userId     String    @db.Uuid
+  tokenHash  String    @unique @db.VarChar(64)
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  revokedAt  DateTime?
+  ipHash     String?   @db.VarChar(64)
+  userAgent  String?   @db.VarChar(500)
+
+  project Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    RuntimeUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, expiresAt])
+  @@index([userId, revokedAt])
+  @@map("runtime_sessions")
+}
+
+model RuntimeAuthEvent {
+  id            String    @id @default(uuid()) @db.Uuid
+  projectId     String    @db.Uuid
+  runtimeUserId String?   @db.Uuid
+  eventType     String    @db.VarChar(80)
+  outcome       String    @db.VarChar(32)
+  ipHash        String?   @db.VarChar(64)
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  runtimeUser RuntimeUser? @relation(fields: [runtimeUserId], references: [id], onDelete: SetNull)
+
+  @@index([projectId, createdAt])
+  @@index([runtimeUserId, createdAt])
+  @@map("runtime_auth_events")
+}
+
+model RuntimeRateLimit {
+  keyHash         String   @id @db.VarChar(64)
+  projectId       String   @db.Uuid
+  action          String   @db.VarChar(40)
+  count           Int
+  windowStartedAt DateTime
+  expiresAt       DateTime
+  updatedAt       DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, action, expiresAt])
+  @@map("runtime_rate_limits")
 }

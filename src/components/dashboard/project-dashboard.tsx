@@ -21,9 +21,10 @@ export function ProjectDashboard({ ownerName, initialProjects }: { ownerName: st
 
   async function createProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formElement = event.currentTarget;
     setPending(true);
     setError(null);
-    const form = new FormData(event.currentTarget);
+    const form = new FormData(formElement);
     const response = await fetch("/api/v1/projects", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -39,7 +40,7 @@ export function ProjectDashboard({ ownerName, initialProjects }: { ownerName: st
       return;
     }
     setProjects((current) => [payload.data!, ...current]);
-    event.currentTarget.reset();
+    formElement.reset();
   }
 
   async function signOut() {
@@ -79,6 +80,7 @@ export function ProjectDashboard({ ownerName, initialProjects }: { ownerName: st
                 <p>Configuration version {project.currentVersion}</p>
                 <div className="project-card-footer">
                   <small>Updated {new Date(project.updatedAt).toLocaleDateString()}</small>
+                  <a className="button secondary" href={`/auth/${project.id}`}>Open hosted auth</a>
                   <a className="button secondary" href={`/dashboard/projects/${project.id}/builder`}>Open builder</a>
                 </div>
               </article>

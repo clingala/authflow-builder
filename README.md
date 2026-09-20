@@ -2,7 +2,7 @@
 
 AuthFlow Builder is a configuration-driven authentication experience builder for product teams and non-technical owners. The same validated configuration will drive the visual builder, live preview, runtime UI, JSON export, and future ChatGPT tools.
 
-Phases 1 through 6 are complete: architecture, application shell, PostgreSQL/Prisma persistence, Better Auth owner sessions, owner-scoped project APIs, versioned configuration storage, audit events, the strict AuthFlow schema, safe defaults, templates, the accessible configuration-driven renderer, the visual builder, and recoverable live-preview drafts.
+Phases 1 through 7 are complete: architecture, application shell, PostgreSQL/Prisma persistence, Better Auth owner sessions, owner-scoped project APIs, versioned configuration storage, audit events, the strict AuthFlow schema, safe defaults, templates, the accessible configuration-driven renderer, the visual builder, recoverable drafts, and project-scoped email/password authentication execution.
 
 ## Start locally
 
@@ -24,14 +24,16 @@ The standalone authentication renderer preview is available at `http://localhost
 
 Owner authentication is available at `/sign-up` and `/sign-in`; authenticated project management is at `/dashboard`.
 
+Each active project has a real hosted authentication page at `/auth/:projectId`. Phase 7 supports project-scoped email/password signup, sign-in, session validation, and sign-out. Verification and recovery delivery remain intentionally unavailable until Phase 8.
+
 ## Quality gate
 
 ```bash
 pnpm check
 ```
 
-Read [the full MVP plan](docs/MVP-PLAN.md) and the [Phase 6 delivery note](docs/PHASE-6.md). The next implementation stage is Phase 7: the security-reviewed generated-user email/password authentication backend.
+Read [the full MVP plan](docs/MVP-PLAN.md) and the [Phase 7 delivery note](docs/PHASE-7.md). The next implementation stage is Phase 8: verification and account-recovery challenges, delivery adapters, and token lifecycle controls.
 
 ## Security posture
 
-This repository does not contain fake login, OAuth, OTP, or password-reset success paths. Authentication execution will be added only with real framework/provider adapters and the security controls described in the plan. Never commit `.env` files or expose provider secrets through `NEXT_PUBLIC_` variables.
+This repository does not contain fake authentication success paths. Email/password execution uses Better Auth's maintained scrypt implementation, hashed opaque runtime sessions, project-scoped identities, database rate limits, and server authorization boundaries. OAuth, OTP, verification delivery, and password reset are not presented as successful until their real adapters are implemented. Never commit `.env` files or expose provider secrets through `NEXT_PUBLIC_` variables.

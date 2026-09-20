@@ -11,5 +11,4 @@ export function getProjectService(): ProjectService {
 }
 
 export { ProjectNotFoundError, ProjectRevisionConflictError, ProjectService } from "./service";
-export type { ProjectStore, ProjectView } from "./contracts";
-
+export type { JsonValue, ProjectStore, ProjectView } from "./contracts";

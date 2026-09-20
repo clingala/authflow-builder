@@ -4,6 +4,9 @@ import { createDefaultAuthFlowConfig } from "../src/modules/auth-config";
 import { getPrisma } from "../src/lib/db/prisma";
 import { PrismaProjectStore } from "../src/modules/projects/prisma-project-store";
 import { ProjectNotFoundError, ProjectService } from "../src/modules/projects/service";
+import { betterAuthPasswordHasher } from "../src/modules/runtime-auth/password";
+import { PrismaRuntimeAuthStore } from "../src/modules/runtime-auth/prisma-runtime-auth-store";
+import { RuntimeAuthService } from "../src/modules/runtime-auth/service";
 
 async function cleanupOwners(ownerIds: string[]) {
   if (ownerIds.length === 0) return;
@@ -36,6 +39,10 @@ async function main() {
       name: "Database Smoke Test",
       accountType: "Customer",
     });
+    const secondProject = await service.create(owners[1]!.id, {
+      name: "Second Runtime Tenant",
+      accountType: "Member",
+    });
     const persisted = await service.get(owners[0]!.id, project.id);
 
     let crossOwnerDenied = false;
@@ -58,6 +65,31 @@ async function main() {
       throw new Error("Persistence or audit assertions failed");
     }
 
+    const runtime = new RuntimeAuthService(
+      new PrismaRuntimeAuthStore(prisma),
+      betterAuthPasswordHasher,
+      "database-smoke-secret-at-least-32-characters",
+    );
+    const runtimeEmail = `runtime-${suffix}@example.test`;
+    const runtimePassword = "SmokePassword9";
+    const runtimeInput = {
+      fields: {
+        full_name: "Runtime Smoke User",
+        email: runtimeEmail,
+        password: runtimePassword,
+        confirm_password: runtimePassword,
+      },
+    };
+    const firstRuntime = await runtime.signUp(project.id, runtimeInput, { ipHash: "smoke-ip-a" });
+    const secondRuntime = await runtime.signUp(secondProject.id, runtimeInput, { ipHash: "smoke-ip-b" });
+    const storedRuntimeUsers = await prisma.runtimeUser.findMany({ where: { email: runtimeEmail } });
+    const storedRuntimeSessions = await prisma.runtimeSession.findMany({ where: { userId: { in: storedRuntimeUsers.map((user) => user.id) } } });
+    const runtimeIsolation = storedRuntimeUsers.length === 2
+      && storedRuntimeUsers.every((user) => user.passwordHash !== runtimePassword)
+      && storedRuntimeSessions.every((session) => session.tokenHash !== firstRuntime.session?.token && session.tokenHash !== secondRuntime.session?.token)
+      && await runtime.getSession(secondProject.id, firstRuntime.session?.token) === null;
+    if (!runtimeIsolation) throw new Error("Runtime tenant or secret-storage assertions failed");
+
     console.log(
       JSON.stringify({
         persisted: true,
@@ -65,6 +97,7 @@ async function main() {
         savedVersion: saved.currentVersion,
         auditCount,
         crossOwnerDenied,
+        runtimeIsolation,
       }),
     );
   } finally {
