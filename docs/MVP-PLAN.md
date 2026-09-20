@@ -1,6 +1,6 @@
 # AuthFlow Builder — MVP architecture and implementation plan
 
-Status: accepted implementation plan, 2026-09-20. Phases 1 through 5 are implemented in this repository.
+Status: accepted implementation plan, 2026-09-20. Phases 1 through 6 are implemented in this repository.
 
 ## 1. Final MVP feature list
 

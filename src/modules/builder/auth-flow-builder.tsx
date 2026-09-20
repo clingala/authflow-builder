@@ -64,10 +64,34 @@ export function AuthFlowBuilder({ project }: { project: BuilderProject }) {
         </div>
       </header>
 
+      {builder.recovery ? (
+        <section className="builder-recovery" aria-label="Recovered local draft" role="status">
+          <div>
+            <strong>{builder.recovery.baseVersion === builder.version ? "Unsaved local draft available" : "An older local draft was found"}</strong>
+            <span>
+              Last updated {new Date(builder.recovery.updatedAt).toLocaleString()} from server version {builder.recovery.baseVersion}.
+              {builder.recovery.baseVersion === builder.version ? "" : ` The project is now version ${builder.version}, so this draft cannot be restored safely.`}
+            </span>
+          </div>
+          <button type="button" className="button secondary" onClick={builder.discardRecovery}>Delete draft</button>
+          {builder.recovery.baseVersion === builder.version ? (
+            <button type="button" className="button primary" onClick={builder.restoreRecovery}>Restore draft</button>
+          ) : null}
+        </section>
+      ) : null}
+
       {builder.errors.length ? (
         <section className="builder-errors" aria-label="Configuration errors" role="alert">
           <strong>Resolve these issues before saving:</strong>
           <ul>{builder.errors.map((error) => <li key={error}>{error}</li>)}</ul>
+          {builder.conflictVersion ? (
+            <div className="builder-conflict-actions">
+              <span>Your local draft remains stored in this browser.</span>
+              <button type="button" className="button secondary" disabled={builder.saveState === "saving"} onClick={() => void builder.loadLatest()}>
+                {builder.saveState === "saving" ? "Loading…" : `Replace with server v${builder.conflictVersion}`}
+              </button>
+            </div>
+          ) : null}
         </section>
       ) : null}
 

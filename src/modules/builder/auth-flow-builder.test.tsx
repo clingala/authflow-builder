@@ -3,11 +3,12 @@
 import "@testing-library/jest-dom/vitest";
 
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createDefaultAuthFlowConfig } from "@/modules/auth-config";
 
 import { AuthFlowBuilder } from "./auth-flow-builder";
+import { builderDraftKey } from "./draft-storage";
 import type { BuilderProject } from "./types";
 
 function project(): BuilderProject {
@@ -20,7 +21,12 @@ function project(): BuilderProject {
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
+});
+
+beforeEach(() => {
+  window.localStorage.clear();
 });
 
 describe("AuthFlowBuilder", () => {
@@ -41,6 +47,81 @@ describe("AuthFlowBuilder", () => {
     expect(screen.getAllByText("Applicant Central").length).toBeGreaterThan(1);
     expect(screen.getByText("Unsaved changes")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save configuration" })).toBeEnabled();
+  });
+
+  it("checkpoints unsaved changes in project-scoped browser storage", async () => {
+    render(<AuthFlowBuilder project={project()} />);
+    fireEvent.change(screen.getByLabelText("Application name"), { target: { value: "Locally Checkpointed" } });
+
+    await waitFor(() => {
+      const stored = JSON.parse(String(window.localStorage.getItem(builderDraftKey(project().id)))) as {
+        baseVersion: number;
+        config: BuilderProject["config"];
+      };
+      expect(stored.baseVersion).toBe(3);
+      expect(stored.config.app.name).toBe("Locally Checkpointed");
+    });
+  });
+
+  it("offers and restores a valid local draft based on the current server version", async () => {
+    const recovered = project().config;
+    recovered.app.name = "Recovered Workspace";
+    window.localStorage.setItem(builderDraftKey(project().id), JSON.stringify({
+      formatVersion: 1,
+      projectId: project().id,
+      baseVersion: 3,
+      updatedAt: "2026-09-20T12:00:00.000Z",
+      config: recovered,
+    }));
+
+    render(<AuthFlowBuilder project={project()} />);
+    expect(await screen.findByRole("status", { name: "Recovered local draft" })).toHaveTextContent("Unsaved local draft available");
+    fireEvent.click(screen.getByRole("button", { name: "Restore draft" }));
+
+    expect(screen.getAllByText("Recovered Workspace").length).toBeGreaterThan(1);
+    expect(screen.getByText("Unsaved changes")).toBeInTheDocument();
+  });
+
+  it("does not restore a local draft based on an older server version", async () => {
+    const recovered = project().config;
+    recovered.app.name = "Stale Workspace";
+    window.localStorage.setItem(builderDraftKey(project().id), JSON.stringify({
+      formatVersion: 1,
+      projectId: project().id,
+      baseVersion: 2,
+      updatedAt: "2026-09-20T12:00:00.000Z",
+      config: recovered,
+    }));
+
+    render(<AuthFlowBuilder project={project()} />);
+    expect(await screen.findByRole("status", { name: "Recovered local draft" })).toHaveTextContent("cannot be restored safely");
+    expect(screen.queryByRole("button", { name: "Restore draft" })).not.toBeInTheDocument();
+  });
+
+  it("removes malformed local drafts instead of trusting browser storage", async () => {
+    window.localStorage.setItem(builderDraftKey(project().id), JSON.stringify({
+      formatVersion: 1,
+      projectId: project().id,
+      baseVersion: 3,
+      updatedAt: "not-a-date",
+      config: { injected: true },
+    }));
+
+    render(<AuthFlowBuilder project={project()} />);
+    await waitFor(() => expect(window.localStorage.getItem(builderDraftKey(project().id))).toBeNull());
+    expect(screen.queryByRole("status", { name: "Recovered local draft" })).not.toBeInTheDocument();
+  });
+
+  it("keeps the in-memory builder usable when browser storage is unavailable", async () => {
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => { throw new Error("storage blocked"); });
+    vi.spyOn(Storage.prototype, "removeItem").mockImplementation(() => { throw new Error("storage blocked"); });
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("storage blocked"); });
+
+    render(<AuthFlowBuilder project={project()} />);
+    fireEvent.change(screen.getByLabelText("Application name"), { target: { value: "Memory Only" } });
+
+    expect(screen.getAllByText("Memory Only").length).toBeGreaterThan(1);
+    await waitFor(() => expect(screen.getByText("Unsaved changes")).toBeInTheDocument());
   });
 
   it("adds, selects, edits, reorders, and removes registration fields", () => {
@@ -106,5 +187,34 @@ describe("AuthFlowBuilder", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("A newer version (5) exists");
     expect(screen.getAllByText("My Local Draft").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Replace with server v5" })).toBeInTheDocument();
+  });
+
+  it("can replace a conflicted draft with the latest validated server version", async () => {
+    const latest = createDefaultAuthFlowConfig({ appName: "Latest Server Version", accountType: "Customer" });
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        data: null,
+        error: { code: "REVISION_CONFLICT", message: "The configuration was changed", currentVersion: 5 },
+      }), { status: 409, headers: { "Content-Type": "application/json" } }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        data: { version: 5, config: latest },
+        error: null,
+      }), { status: 200, headers: { "Content-Type": "application/json" } }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AuthFlowBuilder project={project()} />);
+
+    fireEvent.change(screen.getByLabelText("Application name"), { target: { value: "My Local Draft" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save configuration" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Replace with server v5" }));
+
+    await waitFor(() => expect(screen.getByText("v5")).toBeInTheDocument());
+    expect(screen.getAllByText("Latest Server Version").length).toBeGreaterThan(1);
+    expect(screen.getByText("Up to date")).toBeInTheDocument();
+    expect(window.localStorage.getItem(builderDraftKey(project().id))).toBeNull();
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      "/api/v1/projects/891e05e7-26b1-42ef-8f7c-2c7722125342/config",
+      { method: "GET" },
+    );
   });
 });

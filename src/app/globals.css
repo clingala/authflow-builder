@@ -244,6 +244,12 @@ button:focus-visible, a:focus-visible { outline: 3px solid #2d7d61; outline-offs
 .builder-errors { padding: 10px 22px; color: #831c1c; background: #fff0f0; font-size: 11px; }
 .builder-errors strong { display: block; margin-bottom: 4px; }
 .builder-errors ul { display: flex; flex-wrap: wrap; gap: 3px 24px; margin: 0; padding-left: 18px; }
+.builder-recovery { display: flex; align-items: center; gap: 10px; padding: 10px 22px; color: #263c35; background: #edf5f1; border-bottom: 1px solid #d5e6de; }
+.builder-recovery > div { display: grid; gap: 2px; margin-right: auto; }
+.builder-recovery strong { font-size: 12px; }
+.builder-recovery span, .builder-conflict-actions span { color: #55645f; font-size: 11px; }
+.builder-recovery .button, .builder-conflict-actions .button { min-height: 34px; padding: 7px 12px; font-size: 11px; }
+.builder-conflict-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #efcaca; }
 .auth-builder-workspace { min-height: 0; display: grid; grid-template-columns: 340px minmax(480px, 1fr) 300px; }
 .builder-sidebar, .builder-properties { min-width: 0; background: white; }
 .builder-sidebar { display: grid; grid-template-rows: auto minmax(0, 1fr); border-right: 1px solid var(--line); }
@@ -326,6 +332,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #2d7d61; outline-offs
 
 @media (max-width: 820px) {
   .auth-builder-header { align-items: flex-start; flex-direction: column; }
+  .builder-recovery, .builder-conflict-actions { align-items: stretch; flex-direction: column; }
   .auth-builder-actions { width: 100%; flex-wrap: wrap; }
   .auth-builder-actions > span { margin-right: auto; }
   .auth-builder-workspace { display: block; }
