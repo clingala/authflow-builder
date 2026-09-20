@@ -6,9 +6,11 @@ import { PrismaRuntimeAuthStore } from "./prisma-runtime-auth-store";
 import { RuntimeAuthService } from "./service";
 import { RuntimeChallengeService } from "./challenge-service";
 import { DisabledDeliveryAdapter, HttpDeliveryAdapter } from "./delivery";
+import { GoogleOAuthHttpAdapter, PrismaRuntimeOAuthStore, RuntimeOAuthService, RuntimeOAuthUnavailableError } from "./oauth";
 
 let service: RuntimeAuthService | undefined;
 let challengeService: RuntimeChallengeService | undefined;
+let oauthService: RuntimeOAuthService | undefined;
 
 export function getRuntimeAuthService() {
   service ??= new RuntimeAuthService(
@@ -17,6 +19,15 @@ export function getRuntimeAuthService() {
     readAuthEnvironment().AUTH_SECRET,
   );
   return service;
+}
+
+export function getRuntimeOAuthService() {
+  const environment = readAuthEnvironment();
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) throw new RuntimeOAuthUnavailableError();
+  oauthService ??= new RuntimeOAuthService(new PrismaRuntimeOAuthStore(getPrisma()), new GoogleOAuthHttpAdapter(clientId, clientSecret), betterAuthPasswordHasher, environment.AUTH_SECRET, environment.APP_URL);
+  return oauthService;
 }
 
 export function getRuntimeChallengeService() {
@@ -52,4 +63,5 @@ export {
   RuntimeMethodUnavailableError,
 } from "./challenge-service";
 export { RuntimeDeliveryUnavailableError } from "./delivery";
+export { RuntimeOAuthProviderError, RuntimeOAuthStateError, RuntimeOAuthUnavailableError } from "./oauth";
 export type { PasswordHasher, RuntimeAuthStore, RuntimeSession, RuntimeUser } from "./contracts";

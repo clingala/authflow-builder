@@ -160,6 +160,12 @@ export function RuntimeAuthExperience({ projectId, config }: { projectId: string
             setErrors({}); setMessage(undefined);
           }}
           onSubmit={submit}
+          onSocialLogin={(provider) => {
+            if (provider !== "google") { setMessage(`${provider} authentication is not available yet.`); return; }
+            // OAuth requires a full-document navigation through the server redirect endpoint.
+            // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+            window.location.assign(`/api/runtime/projects/${projectId}/oauth/google/start`);
+          }}
         />
       </div>
     </main>

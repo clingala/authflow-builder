@@ -18,6 +18,9 @@ import {
   RuntimeChallengeInvalidError,
   RuntimeDeliveryUnavailableError,
   RuntimeMethodUnavailableError,
+  RuntimeOAuthProviderError,
+  RuntimeOAuthStateError,
+  RuntimeOAuthUnavailableError,
   type RuntimeRequestContext,
 } from "@/modules/runtime-auth";
 
@@ -70,6 +73,9 @@ export function runtimeErrorResponse(error: unknown) {
   if (error instanceof RuntimeVerificationRequiredError) return NextResponse.json({ data: null, error: { code: "VERIFICATION_REQUIRED", message: "Account verification is required", channels: error.channels } }, { status: 403 });
   if (error instanceof RuntimeDeliveryUnavailableError) return errorJson(503, "DELIVERY_UNAVAILABLE", "Email or SMS delivery is not configured for this installation");
   if (error instanceof RuntimeMethodUnavailableError) return errorJson(409, "METHOD_UNAVAILABLE", "That verification or recovery method is not available");
+  if (error instanceof RuntimeOAuthUnavailableError) return errorJson(503, "OAUTH_UNAVAILABLE", "Google authentication is not configured for this installation");
+  if (error instanceof RuntimeOAuthStateError) return errorJson(400, "INVALID_OAUTH_STATE", "The authentication request is invalid or expired");
+  if (error instanceof RuntimeOAuthProviderError) return errorJson(400, "OAUTH_FAILED", "Google authentication could not be completed");
   if (error instanceof RuntimeChallengeExpiredError) return errorJson(400, "CHALLENGE_EXPIRED", "The code or link has expired. Request a new one.");
   if (error instanceof RuntimeChallengeAttemptsExceededError) return errorJson(429, "ATTEMPTS_EXCEEDED", "Too many incorrect attempts. Request a new code or link.");
   if (error instanceof RuntimeChallengeInvalidError) return errorJson(400, "INVALID_CHALLENGE", "The code or link is invalid");
