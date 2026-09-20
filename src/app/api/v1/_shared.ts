@@ -9,7 +9,22 @@ export class ForbiddenError extends Error {}
 
 export function requireSameOrigin(request: NextRequest): void {
   const origin = request.headers.get("origin");
-  if (!origin || origin !== request.nextUrl.origin) throw new ForbiddenError();
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const host = forwardedHost || request.headers.get("host");
+  const forwardedProtocol = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+
+  if (!origin || !host) throw new ForbiddenError();
+
+  try {
+    const originUrl = new URL(origin);
+    const expectedProtocol = forwardedProtocol ? `${forwardedProtocol}:` : request.nextUrl.protocol;
+    if (originUrl.host.toLowerCase() !== host.toLowerCase() || originUrl.protocol !== expectedProtocol) {
+      throw new ForbiddenError();
+    }
+  } catch (error) {
+    if (error instanceof ForbiddenError) throw error;
+    throw new ForbiddenError();
+  }
 }
 
 export async function requireOwnerId(request: NextRequest): Promise<string> {

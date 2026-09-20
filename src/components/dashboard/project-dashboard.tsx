@@ -77,7 +77,10 @@ export function ProjectDashboard({ ownerName, initialProjects }: { ownerName: st
                 <span className="pill dark">{project.accountType}</span>
                 <h3>{project.name}</h3>
                 <p>Configuration version {project.currentVersion}</p>
-                <small>Updated {new Date(project.updatedAt).toLocaleDateString()}</small>
+                <div className="project-card-footer">
+                  <small>Updated {new Date(project.updatedAt).toLocaleDateString()}</small>
+                  <a className="button secondary" href={`/dashboard/projects/${project.id}/builder`}>Open builder</a>
+                </div>
               </article>
             ))}
           </div>

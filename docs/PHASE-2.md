@@ -54,7 +54,7 @@ Completed 2026-09-20.
 - The maintained `pnpm db:smoke` test proved real project persistence, version `1 → 2`, two audit events, cross-owner denial with a known project ID, and complete test-data cleanup.
 - Database inspection confirmed eight application tables, one completed migration, and zero residual smoke-test users.
 
-The Docker PostgreSQL service is currently healthy on `localhost:5432`. Full browser sign-up/sign-in testing still requires a local `.env.local` containing a private `AUTH_SECRET`; no secret was generated or persisted automatically.
+The Docker PostgreSQL service is exposed on `127.0.0.1:5432`. The explicit IPv4 address avoids intermittent Windows/Docker `localhost` resolution failures. Full browser sign-up/sign-in testing still requires a local `.env.local` containing a private `AUTH_SECRET`; no secret was generated or persisted automatically.
 
 ## Deliberately deferred
 
