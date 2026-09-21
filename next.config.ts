@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-import { securityHeaders } from "./src/lib/security/headers";
+import { createSecurityHeaders } from "./src/lib/security/headers";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/(.*)",
-        headers: securityHeaders,
+        headers: createSecurityHeaders(process.env.NODE_ENV),
       },
     ];
   },

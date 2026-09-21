@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { securityHeaders } from "./headers";
+import { createSecurityHeaders, securityHeaders } from "./headers";
 
 describe("securityHeaders", () => {
   it("prevents framing and MIME sniffing", () => {
@@ -15,5 +15,13 @@ describe("securityHeaders", () => {
     const csp = securityHeaders.find((header) => header.key === "Content-Security-Policy");
     expect(csp?.value).toContain("default-src 'self'");
     expect(csp?.value).toContain("frame-ancestors 'none'");
+    expect(csp?.value).not.toContain("'unsafe-eval'");
+    expect(csp?.value).toContain("upgrade-insecure-requests");
+  });
+
+  it("allows React debugging eval only in local development", () => {
+    const development = createSecurityHeaders("development").find((header) => header.key === "Content-Security-Policy");
+    expect(development?.value).toContain("script-src 'self' 'unsafe-inline' 'unsafe-eval'");
+    expect(development?.value).not.toContain("upgrade-insecure-requests");
   });
 });
