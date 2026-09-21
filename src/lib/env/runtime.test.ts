@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { readAuthEnvironment, readDatabaseEnvironment } from "./runtime";
+import { readAuthEnvironment, readDatabaseEnvironment, readOAuthPlatformEnvironment } from "./runtime";
 
 describe("runtime environment", () => {
   it("accepts an explicit PostgreSQL URL", () => {
@@ -34,5 +34,13 @@ describe("runtime environment", () => {
       AUTH_SECRET: "a-secure-development-secret-with-32-characters",
       APP_URL: "ftp://auth.example.test",
     })).toThrow(/HTTP or HTTPS/);
+  });
+
+  it("requires a secure public OAuth issuer in production", () => {
+    expect(() => readOAuthPlatformEnvironment({
+      HYDRA_ADMIN_URL: "http://hydra:4445",
+      HYDRA_PUBLIC_URL: "http://auth.example.test",
+      NODE_ENV: "production",
+    })).toThrow(/HTTPS in production/);
   });
 });

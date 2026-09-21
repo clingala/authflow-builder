@@ -25,6 +25,7 @@ class MemoryStore implements RuntimeAuthStore {
   async getProject(projectId: string) { return this.projects.get(projectId) ?? null; }
   async findUserByEmail(projectId: string, email: string) { return this.users.find((user) => user.projectId === projectId && user.email === email) ?? null; }
   async findUserByPhone(projectId: string, phone: string) { return this.users.find((user) => user.projectId === projectId && (user.profile as Record<string, unknown>).phone === phone) ?? null; }
+  async findUserById(projectId: string, userId: string) { return this.users.find((user) => user.projectId === projectId && user.id === userId) ?? null; }
   async createUser(input: { projectId: string; email: string; passwordHash: string; profile: JsonValue }) {
     if (await this.findUserByEmail(input.projectId, input.email)) return null;
     const user: RuntimeUser = { id: `user-${this.users.length + 1}`, ...input, emailVerified: false, phoneVerified: false };

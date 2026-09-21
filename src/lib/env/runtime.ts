@@ -14,8 +14,19 @@ const authEnvSchema = databaseEnvSchema.extend({
   }
 });
 
+const oauthPlatformEnvSchema = z.object({
+  HYDRA_ADMIN_URL: z.string().url().refine((value) => ["http:", "https:"].includes(new URL(value).protocol)),
+  HYDRA_PUBLIC_URL: z.string().url().refine((value) => ["http:", "https:"].includes(new URL(value).protocol)),
+  NODE_ENV: z.enum(["development", "test", "production"]).optional(),
+}).superRefine((environment, context) => {
+  if (environment.NODE_ENV === "production" && new URL(environment.HYDRA_PUBLIC_URL).protocol !== "https:") {
+    context.addIssue({ code: "custom", message: "HYDRA_PUBLIC_URL must use HTTPS in production", path: ["HYDRA_PUBLIC_URL"] });
+  }
+});
+
 export type DatabaseEnvironment = z.infer<typeof databaseEnvSchema>;
 export type AuthEnvironment = z.infer<typeof authEnvSchema>;
+export type OAuthPlatformEnvironment = z.infer<typeof oauthPlatformEnvSchema>;
 
 type EnvironmentSource = Record<string, string | undefined>;
 
@@ -25,4 +36,8 @@ export function readDatabaseEnvironment(environment: EnvironmentSource = process
 
 export function readAuthEnvironment(environment: EnvironmentSource = process.env): AuthEnvironment {
   return authEnvSchema.parse(environment);
+}
+
+export function readOAuthPlatformEnvironment(environment: EnvironmentSource = process.env): OAuthPlatformEnvironment {
+  return oauthPlatformEnvSchema.parse(environment);
 }

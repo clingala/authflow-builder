@@ -5,6 +5,7 @@ import { getAuth } from "@/lib/auth/server";
 import { ProjectNotFoundError, ProjectRevisionConflictError } from "@/modules/projects";
 import { ToolAuthorizationError, UnknownToolError } from "@/modules/tool-api";
 import { ApplicationClientNotFoundError } from "@/modules/application-clients";
+import { OAuthPlatformRequestError, OAuthPlatformUnavailableError } from "@/modules/oauth-platform";
 
 export class UnauthorizedError extends Error {}
 export class ForbiddenError extends Error {}
@@ -40,6 +41,18 @@ export function dataResponse<T>(data: T, init?: ResponseInit) {
 }
 
 export function errorResponse(error: unknown) {
+  if (error instanceof OAuthPlatformUnavailableError) {
+    return NextResponse.json(
+      { data: null, error: { code: "OAUTH_PLATFORM_UNAVAILABLE", message: "The OAuth provider is temporarily unavailable" } },
+      { status: 503 },
+    );
+  }
+  if (error instanceof OAuthPlatformRequestError) {
+    return NextResponse.json(
+      { data: null, error: { code: "OAUTH_PLATFORM_REJECTED", message: "The OAuth provider rejected the client configuration" } },
+      { status: error.status >= 400 && error.status < 500 ? 400 : 502 },
+    );
+  }
   if (error instanceof ApplicationClientNotFoundError) {
     return NextResponse.json(
       { data: null, error: { code: "NOT_FOUND", message: "Application client or project not found" } },

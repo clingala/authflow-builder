@@ -18,6 +18,51 @@ services:
       timeout: 5s
       retries: 10
 
+  hydra-postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hydra
+      POSTGRES_USER: hydra
+      POSTGRES_PASSWORD: hydra-local-only
+    volumes:
+      - authflow_hydra_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hydra -d hydra"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  hydra-migrate:
+    image: oryd/hydra:v2.3.0
+    command: migrate sql -e --yes
+    environment:
+      DSN: postgres://hydra:hydra-local-only@hydra-postgres:5432/hydra?sslmode=disable
+    depends_on:
+      hydra-postgres:
+        condition: service_healthy
+    restart: "no"
+
+  hydra:
+    image: oryd/hydra:v2.3.0
+    command: serve all --dev
+    restart: unless-stopped
+    environment:
+      DSN: postgres://hydra:hydra-local-only@hydra-postgres:5432/hydra?sslmode=disable
+      SECRETS_SYSTEM: local-development-hydra-secret-change-me
+      URLS_SELF_ISSUER: http://localhost:4444
+      URLS_LOGIN: http://localhost:3000/oauth/login
+      URLS_CONSENT: http://localhost:3000/oauth/consent
+      URLS_ERROR: http://localhost:3000/oauth/error
+      SERVE_COOKIES_SAME_SITE_MODE: Lax
+      SERVE_PUBLIC_CORS_ENABLED: "true"
+    ports:
+      - "4444:4444"
+      - "127.0.0.1:4445:4445"
+    depends_on:
+      hydra-migrate:
+        condition: service_completed_successfully
+
 volumes:
   authflow_postgres_data:
-
+  authflow_hydra_postgres_data:

@@ -25,4 +25,18 @@ The JSON envelope is stable across React, Java, Python, native mobile, and other
 
 ## Security boundary
 
-This milestone does not claim to implement OAuth or OpenID Connect. Authorization Code + PKCE, signed tokens, discovery metadata, JWKS rotation, and confidential server clients must be implemented using reviewed standards-compliant libraries before AuthFlow is described as an identity provider.
+The configuration API alone is not an OAuth implementation. Protocol execution is enabled only when the reviewed Hydra sidecar described below is deployed and healthy.
+
+## OAuth 2.1 and OpenID Connect engine
+
+AuthFlow delegates protocol execution to Ory Hydra. Hydra owns authorization codes, S256 PKCE verification, access and refresh tokens, signing keys, discovery metadata, and JWKS. AuthFlow owns project-scoped identities and the configurable login/consent UI.
+
+The Hydra administrative API is server-only. In local development it binds to loopback port `4445`; in production it is reachable only over the private Compose network. External applications use the public issuer on port `4444` or its production HTTPS hostname.
+
+Start the local protocol engine with:
+
+```bash
+docker compose up -d hydra
+```
+
+New application registrations are synchronized to Hydra as public clients (`token_endpoint_auth_method=none`) supporting authorization code and refresh-token grants. Clients must use S256 PKCE. Existing application clients created before Hydra was enabled should be revoked and registered again.

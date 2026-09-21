@@ -60,6 +60,11 @@ export class PrismaRuntimeAuthStore implements RuntimeAuthStore {
     return user ? mapUser(user) : null;
   }
 
+  async findUserById(projectId: string, userId: string) {
+    const user = await this.prisma.runtimeUser.findFirst({ where: { id: userId, projectId } });
+    return user ? mapUser(user) : null;
+  }
+
   async createUser(input: { projectId: string; email: string; passwordHash: string; profile: JsonValue }) {
     try {
       const user = await this.prisma.runtimeUser.create({

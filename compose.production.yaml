@@ -16,6 +16,50 @@ services:
       timeout: 5s
       retries: 20
 
+  hydra-postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hydra
+      POSTGRES_USER: hydra
+      POSTGRES_PASSWORD: ${HYDRA_POSTGRES_PASSWORD:?Set HYDRA_POSTGRES_PASSWORD in the deployment secret store}
+    volumes:
+      - authflow_hydra_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hydra -d hydra"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  hydra-migrate:
+    image: oryd/hydra:v2.3.0
+    command: migrate sql -e --yes
+    environment:
+      DSN: postgres://hydra:${HYDRA_POSTGRES_PASSWORD}@hydra-postgres:5432/hydra?sslmode=disable
+    depends_on:
+      hydra-postgres:
+        condition: service_healthy
+    restart: "no"
+
+  hydra:
+    image: oryd/hydra:v2.3.0
+    command: serve all
+    restart: unless-stopped
+    environment:
+      DSN: postgres://hydra:${HYDRA_POSTGRES_PASSWORD}@hydra-postgres:5432/hydra?sslmode=disable
+      SECRETS_SYSTEM: ${HYDRA_SYSTEM_SECRET:?Set HYDRA_SYSTEM_SECRET in the deployment secret store}
+      URLS_SELF_ISSUER: ${HYDRA_PUBLIC_URL:?Set HYDRA_PUBLIC_URL to the public HTTPS issuer}
+      URLS_LOGIN: ${APP_URL}/oauth/login
+      URLS_CONSENT: ${APP_URL}/oauth/consent
+      URLS_ERROR: ${APP_URL}/oauth/error
+      SERVE_COOKIES_SAME_SITE_MODE: Lax
+      SERVE_PUBLIC_CORS_ENABLED: "true"
+    ports:
+      - "4444:4444"
+    depends_on:
+      hydra-migrate:
+        condition: service_completed_successfully
+
   migrate:
     build:
       context: .
@@ -42,11 +86,15 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       AUTHFLOW_DELIVERY_WEBHOOK_URL: ${AUTHFLOW_DELIVERY_WEBHOOK_URL:-}
       AUTHFLOW_DELIVERY_WEBHOOK_SECRET: ${AUTHFLOW_DELIVERY_WEBHOOK_SECRET:-}
+      HYDRA_ADMIN_URL: http://hydra:4445
+      HYDRA_PUBLIC_URL: ${HYDRA_PUBLIC_URL:?Set HYDRA_PUBLIC_URL to the public HTTPS issuer}
     ports:
       - "3000:3000"
     depends_on:
       migrate:
         condition: service_completed_successfully
+      hydra:
+        condition: service_started
     read_only: true
     tmpfs:
       - /tmp
@@ -56,3 +104,4 @@ services:
 
 volumes:
   authflow_postgres_data:
+  authflow_hydra_postgres_data:

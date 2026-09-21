@@ -25,6 +25,11 @@ export type PublicClientConfiguration = {
     recoveryReset: string;
     verificationRequest: string;
     verificationConfirm: string;
+    issuer: string;
+    authorization: string;
+    token: string;
+    userInfo: string;
+    discovery: string;
   };
 };
 

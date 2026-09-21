@@ -116,6 +116,11 @@ export class RuntimeAuthService {
     return this.store.findSession(projectId, hashToken(token), this.now());
   }
 
+  async getUserById(rawProjectId: string, userId: string) {
+    const projectId = projectIdSchema.parse(rawProjectId);
+    return this.store.findUserById(projectId, userId);
+  }
+
   async signOut(rawProjectId: string, token: string | undefined, context: RuntimeRequestContext) {
     const { id: projectId } = await this.getProject(rawProjectId);
     if (token) await this.store.revokeSession(projectId, hashToken(token));

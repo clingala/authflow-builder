@@ -10,7 +10,7 @@ type ApiPayload = {
   error: { code: string; message: string; fields?: Record<string, string>; channels?: Array<"email" | "phone"> } | null;
 };
 
-export function RuntimeAuthExperience({ projectId, config }: { projectId: string; config: AuthFlowConfig }) {
+export function RuntimeAuthExperience({ projectId, config, oauthLoginChallenge }: { projectId: string; config: AuthFlowConfig; oauthLoginChallenge?: string }) {
   const [screen, setScreen] = useState<AuthFlowScreen>("login");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string>();
@@ -19,6 +19,17 @@ export function RuntimeAuthExperience({ projectId, config }: { projectId: string
   const [pendingIdentifier, setPendingIdentifier] = useState<string>();
   const [pendingChannel, setPendingChannel] = useState<"email" | "phone">("email");
   const [recoveryMethod, setRecoveryMethod] = useState<AuthFlowConfig["recovery"]["methods"][number]>(config.recovery.methods[0] ?? "email_link");
+
+  async function completeOAuthLogin() {
+    if (!oauthLoginChallenge) return false;
+    const response = await fetch("/api/platform/v1/oauth/login/accept", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ challenge: oauthLoginChallenge }),
+    });
+    const payload = await response.json() as { data: { redirectTo: string } | null; error: { message: string } | null };
+    if (!response.ok || !payload.data) throw new Error(payload.error?.message ?? "OAuth login could not be completed");
+    window.location.assign(payload.data.redirectTo);
+    return true;
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -108,6 +119,7 @@ export function RuntimeAuthExperience({ projectId, config }: { projectId: string
         setMessage(config.messages.verificationRequired);
         return;
       }
+      if (await completeOAuthLogin()) return;
       setSignedInEmail(payload.data.user.email);
       setMessage(screen === "signup" ? config.messages.accountCreated : `Signed in to ${config.app.name}.`);
     } catch {

@@ -48,6 +48,7 @@ export interface RuntimeAuthStore {
   getProject(projectId: string): Promise<RuntimeProject | null>;
   findUserByEmail(projectId: string, email: string): Promise<RuntimeUser | null>;
   findUserByPhone(projectId: string, phone: string): Promise<RuntimeUser | null>;
+  findUserById(projectId: string, userId: string): Promise<RuntimeUser | null>;
   createUser(input: {
     projectId: string;
     email: string;

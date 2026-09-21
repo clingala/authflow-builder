@@ -22,6 +22,7 @@ class ChallengeStore implements RuntimeAuthStore {
   async getProject(id: string) { return id === projectId ? this.project : null; }
   async findUserByEmail(id: string, email: string) { return id === projectId && email === this.user.email ? this.user : null; }
   async findUserByPhone(id: string, phone: string) { return id === projectId && phone === "+15555550123" ? this.user : null; }
+  async findUserById(id: string, userId: string) { return id === projectId && userId === this.user.id ? this.user : null; }
   async createUser(): Promise<RuntimeUser | null> { return null; }
   async createSession(): Promise<RuntimeSession> { throw new Error("not used"); }
   async findSession() { return null; }
