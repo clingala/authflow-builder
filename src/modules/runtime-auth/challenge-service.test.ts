@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { createDefaultAuthFlowConfig } from "@/modules/auth-config";
-import { RuntimeChallengeExpiredError, RuntimeChallengeInvalidError, RuntimeChallengeService } from "./challenge-service";
+import { RuntimeChallengeAttemptsExceededError, RuntimeChallengeExpiredError, RuntimeChallengeInvalidError, RuntimeChallengeService } from "./challenge-service";
 import type { DeliveryMessage, RuntimeDeliveryAdapter } from "./delivery";
 import type { PasswordHasher, RuntimeAuthEventInput, RuntimeAuthStore, RuntimeChallenge, RuntimeProject, RuntimeSession, RuntimeUser } from "./contracts";
 
@@ -104,5 +104,23 @@ describe("RuntimeChallengeService", () => {
     advance(store.project.config.verification.otp.resendCooldownSeconds * 1000 + 1);
     await service.requestVerification(projectId, { identifier: store.user.email, channel: "email" }, {});
     await expect(service.confirmVerification(projectId, { identifier: store.user.email, channel: "email", secret: "code" in first ? first.code : "" }, {})).rejects.toBeInstanceOf(RuntimeChallengeInvalidError);
+  });
+
+  it("enforces the configured attempt cap", async () => {
+    const { service, store } = setup();
+    await service.requestVerification(projectId, { identifier: store.user.email, channel: "email" }, {});
+
+    for (let attempt = 1; attempt < store.project.config.verification.otp.maxAttempts; attempt += 1) {
+      await expect(service.confirmVerification(projectId, { identifier: store.user.email, channel: "email", secret: "000000" }, {})).rejects.toBeInstanceOf(RuntimeChallengeInvalidError);
+    }
+    await expect(service.confirmVerification(projectId, { identifier: store.user.email, channel: "email", secret: "000000" }, {})).rejects.toBeInstanceOf(RuntimeChallengeAttemptsExceededError);
+  });
+
+  it("enforces resend cooldown without delivering another secret", async () => {
+    const { service, store, messages } = setup();
+    await service.requestVerification(projectId, { identifier: store.user.email, channel: "email" }, {});
+
+    await expect(service.requestVerification(projectId, { identifier: store.user.email, channel: "email" }, {})).rejects.toMatchObject({ retryAfterSeconds: store.project.config.verification.otp.resendCooldownSeconds });
+    expect(messages).toHaveLength(1);
   });
 });

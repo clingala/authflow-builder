@@ -114,6 +114,7 @@ export function FieldRenderer({ field, passwordPolicy, error }: FieldRendererPro
           required={field.required}
           placeholder={field.placeholder}
           autoComplete={"autocomplete" in field ? field.autocomplete : undefined}
+          inputMode={"inputMode" in field ? field.inputMode : undefined}
           minLength={constraints.minLength}
           maxLength={constraints.maxLength}
           min={constraints.min}

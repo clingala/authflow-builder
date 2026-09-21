@@ -114,8 +114,9 @@ export class RuntimeChallengeService {
     if (challenge.attempts >= maxAttempts) throw new RuntimeChallengeAttemptsExceededError();
     const suppliedHash = this.hmac(`secret:${secret}`);
     if (!timingSafeEqual(Buffer.from(challenge.secretHash, "hex"), Buffer.from(suppliedHash, "hex"))) {
+      const attemptsAfterFailure = challenge.attempts + 1;
       await this.store.incrementChallengeAttempt(challenge.id);
-      throw challenge.attempts + 1 >= maxAttempts ? new RuntimeChallengeAttemptsExceededError() : new RuntimeChallengeInvalidError();
+      throw attemptsAfterFailure >= maxAttempts ? new RuntimeChallengeAttemptsExceededError() : new RuntimeChallengeInvalidError();
     }
     if (!await this.store.consumeChallenge(challenge.id, now)) throw new RuntimeChallengeInvalidError();
     return challenge;

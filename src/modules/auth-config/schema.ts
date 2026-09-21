@@ -60,6 +60,7 @@ function textField<const T extends "text" | "email" | "phone" | "password" | "te
       ...commonFieldShape,
       type: z.literal(type),
       validation: lengthValidationSchema.optional(),
+      inputMode: z.enum(["text", "email", "tel", "url", "numeric", "decimal", "search"]).optional(),
       autocomplete: z
         .enum([
           "name",

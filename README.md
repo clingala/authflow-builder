@@ -2,7 +2,7 @@
 
 AuthFlow Builder is a configuration-driven authentication experience builder for product teams and non-technical owners. The same validated configuration will drive the visual builder, live preview, runtime UI, JSON export, and future ChatGPT tools.
 
-Phases 1 through 13 are complete: architecture, application shell, PostgreSQL/Prisma persistence, Better Auth owner sessions, owner-scoped project APIs, versioned configuration storage, audit events, the strict AuthFlow schema, safe defaults, templates, the accessible configuration-driven renderer, the visual builder, recoverable drafts, project-scoped authentication execution, verification and recovery, Google OAuth, accessible branding safeguards, validated exports, the scoped structured tool layer, and a documented security hardening review.
+Phases 1 through 14 are complete: architecture, application shell, PostgreSQL/Prisma persistence, Better Auth owner sessions, owner-scoped project APIs, versioned configuration storage, audit events, the strict AuthFlow schema, safe defaults, templates, the accessible configuration-driven renderer, the visual builder, recoverable drafts, project-scoped authentication execution, verification and recovery, Google OAuth, accessible branding safeguards, validated exports, the scoped structured tool layer, security hardening, and the automated unit/integration/browser test matrix.
 
 ## Start locally
 
@@ -30,9 +30,11 @@ Each active project has a real hosted authentication page at `/auth/:projectId`.
 
 ```bash
 pnpm check
+pnpm exec playwright install chromium
+pnpm test:e2e
 ```
 
-Read [the full MVP plan](docs/MVP-PLAN.md), the [Phase 12 delivery note](docs/PHASE-12.md), the [Phase 13 security review](docs/PHASE-13.md), and the [security policy](SECURITY.md). The next implementation stage is Phase 14: the complete automated testing matrix.
+Read [the full MVP plan](docs/MVP-PLAN.md), the [Phase 13 security review](docs/PHASE-13.md), the [Phase 14 testing note](docs/PHASE-14.md), and the [security policy](SECURITY.md). The next implementation stage is Phase 15: deployment documentation and operational preparation.
 
 ## Security posture
 

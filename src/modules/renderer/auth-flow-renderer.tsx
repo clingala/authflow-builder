@@ -138,6 +138,7 @@ function VerificationScreen({ config, errors, onNavigate }: Pick<AuthFlowRendere
     required: true,
     width: "full",
     autocomplete: "off",
+    inputMode: "numeric",
     placeholder: "Enter your code",
     validation: { minLength: 4, maxLength: 10 },
   };

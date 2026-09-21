@@ -19,6 +19,7 @@ const phases = [
   { name: "Export & integration", detail: "Validated JSON and a Next.js hosted-auth starter", state: "Complete" },
   { name: "ChatGPT tools", detail: "Scoped structured actions over the same application services", state: "Complete" },
   { name: "Security review", detail: "Threat model, enumeration defenses, and dependency hardening", state: "Complete" },
+  { name: "Automated testing", detail: "Security matrices and desktop/mobile browser journeys", state: "Complete" },
 ];
 
 export default function Home() {
@@ -42,7 +43,7 @@ export default function Home() {
 
         <div className="sidebar-note">
           <span className="status-dot" aria-hidden="true" />
-          <div><strong>Phase 13 ready</strong><small>Security review and hardening delivered</small></div>
+          <div><strong>Phase 14 ready</strong><small>Automated test matrix delivered</small></div>
         </div>
       </aside>
 
@@ -85,7 +86,7 @@ export default function Home() {
         <section id="roadmap" className="section-block" aria-labelledby="roadmap-title">
           <div className="section-heading">
             <div><p className="eyebrow">Build status</p><h2 id="roadmap-title">A production foundation, built in phases</h2></div>
-            <span className="phase-counter">13 / 15</span>
+            <span className="phase-counter">14 / 15</span>
           </div>
           <div className="phase-grid">
             {phases.map((phase, index) => (

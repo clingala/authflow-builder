@@ -103,6 +103,18 @@ describe("ProjectService authorization", () => {
 
     expect((await service.list("owner-a")).map((project) => project.name)).toEqual(["Alpha"]);
   });
+
+  it("does not let another owner save a known project's configuration", async () => {
+    const store = new MemoryProjectStore();
+    const service = new ProjectService(store);
+    const project = await service.create("owner-a", { name: "Portal", accountType: "Member" });
+    const config = createDefaultAuthFlowConfig({ appName: "Hijacked", accountType: "Administrator" });
+
+    await expect(service.saveConfig("owner-b", project.id, { expectedVersion: 1, config })).rejects.toBeInstanceOf(
+      ProjectNotFoundError,
+    );
+    expect(await service.get("owner-a", project.id)).toMatchObject({ name: "Portal", currentVersion: 1 });
+  });
 });
 
 describe("ProjectService configuration versions", () => {

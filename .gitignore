@@ -3,6 +3,8 @@ node_modules/
 .next/
 src/generated/prisma/
 coverage/
+playwright-report/
+test-results/
 dist/
 *.tsbuildinfo
 .env

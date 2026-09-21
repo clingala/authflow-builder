@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { PasswordHasher, RuntimeSession, RuntimeUser } from "./contracts";
-import { RuntimeOAuthService, RuntimeOAuthStateError, RuntimeOAuthUnavailableError, type GoogleOAuthAdapter, type RuntimeOAuthStore } from "./oauth";
+import { RuntimeOAuthProviderError, RuntimeOAuthService, RuntimeOAuthStateError, RuntimeOAuthUnavailableError, type GoogleOAuthAdapter, type RuntimeOAuthStore } from "./oauth";
 
 const projectId = "11111111-1111-4111-8111-111111111111";
 
@@ -50,5 +50,19 @@ describe("RuntimeOAuthService", () => {
   it("refuses disabled provider configurations", async () => {
     const { service } = setup(false);
     await expect(service.start(projectId)).rejects.toBeInstanceOf(RuntimeOAuthUnavailableError);
+  });
+
+  it("rejects a valid state when the callback project does not match", async () => {
+    const { service, provider } = setup();
+    const state = new URL(await service.start(projectId)).searchParams.get("state")!;
+
+    await expect(service.callback("22222222-2222-4222-8222-222222222222", { state, code: "authorization-code" }, {})).rejects.toBeInstanceOf(RuntimeOAuthStateError);
+    expect(provider.exchange).not.toHaveBeenCalled();
+  });
+
+  it("maps provider denials and incomplete callbacks to a provider error", async () => {
+    const { service } = setup();
+    await expect(service.callback(projectId, { error: "access_denied" }, {})).rejects.toBeInstanceOf(RuntimeOAuthProviderError);
+    await expect(service.callback(projectId, { state: "state-without-code" }, {})).rejects.toBeInstanceOf(RuntimeOAuthProviderError);
   });
 });

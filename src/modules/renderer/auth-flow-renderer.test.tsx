@@ -86,6 +86,7 @@ describe("AuthFlowRenderer", () => {
     render(<AuthFlowRenderer config={config} screen="verification" />);
 
     expect(screen.getByLabelText("Verification Code *")).toBeInTheDocument();
+    expect(screen.getByLabelText("Verification Code *")).toHaveAttribute("inputmode", "numeric");
     expect(screen.getByText(/Codes expire after 10 minutes/)).toBeInTheDocument();
   });
 
