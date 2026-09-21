@@ -83,5 +83,14 @@ describe("AuthFlow configuration schema", () => {
     });
     expect(() => parseAuthFlowConfig(config)).toThrow(/unique/);
   });
-});
 
+  it("rejects credential-bearing logos and inaccessible text themes", () => {
+    const unsafeLogo = validConfig();
+    unsafeLogo.branding.logoUrl = "https://user:secret@example.test/logo.png";
+    expect(() => parseAuthFlowConfig(unsafeLogo)).toThrow(/relative URL or an HTTPS URL/);
+
+    const lowContrast = validConfig();
+    lowContrast.branding.textColor = "#EEEEEE";
+    expect(() => parseAuthFlowConfig(lowContrast)).toThrow(/WCAG AA contrast/);
+  });
+});

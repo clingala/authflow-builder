@@ -32,7 +32,7 @@ Each active project has a real hosted authentication page at `/auth/:projectId`.
 pnpm check
 ```
 
-Read [the full MVP plan](docs/MVP-PLAN.md), the [Phase 8 delivery note](docs/PHASE-8.md), and the [Phase 9 delivery note](docs/PHASE-9.md). The next implementation stage is Phase 10: branding safety, contrast feedback, and theme refinement.
+Read [the full MVP plan](docs/MVP-PLAN.md), the [Phase 9 delivery note](docs/PHASE-9.md), and the [Phase 10 delivery note](docs/PHASE-10.md). The next implementation stage is Phase 11: validated JSON export and a reusable React/Next.js integration target.
 
 ## Security posture
 

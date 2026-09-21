@@ -174,7 +174,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid #2d7d61; outline-offs
 .authflow-required { color: #a22b2b; }
 .authflow-field input:not([type="checkbox"]):not([type="radio"]), .authflow-field textarea, .authflow-field select { width: 100%; min-height: 45px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--authflow-text) 22%, transparent); border-radius: max(6px, calc(var(--authflow-radius) * .55)); color: var(--authflow-text); background: var(--authflow-surface); font: inherit; }
 .authflow-field textarea { min-height: 100px; resize: vertical; }
-.authflow-field input:focus-visible, .authflow-field textarea:focus-visible, .authflow-field select:focus-visible { outline: 3px solid color-mix(in srgb, var(--authflow-primary) 30%, transparent); outline-offset: 1px; border-color: var(--authflow-primary); }
+.authflow-field input:focus-visible, .authflow-field textarea:focus-visible, .authflow-field select:focus-visible { outline: 3px solid var(--authflow-focus); outline-offset: 1px; border-color: var(--authflow-focus); }
 .authflow-field [aria-invalid="true"] { border-color: #b3261e !important; }
 .authflow-field small, .authflow-cooldown { color: color-mix(in srgb, var(--authflow-text) 61%, transparent); font-size: 11px; line-height: 1.45; }
 .authflow-field-error { color: #a51f1f; font-size: 11px; }
@@ -192,8 +192,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid #2d7d61; outline-offs
 .authflow-choice, .authflow-check-field > label { display: flex !important; grid-template-columns: none; align-items: flex-start; gap: 9px !important; line-height: 1.45; }
 .authflow-choice input, .authflow-check-field input { width: 17px; height: 17px; flex: 0 0 auto; margin: 1px 0 0; accent-color: var(--authflow-primary); }
 .authflow-check-field a { color: var(--authflow-primary); text-decoration: underline; text-underline-offset: 2px; }
-.authflow-submit { width: 100%; min-height: 46px; margin-top: 21px; padding: 0 18px; border: 0; border-radius: max(7px, calc(var(--authflow-radius) * .6)); color: white; font: 750 13px Arial, sans-serif; cursor: pointer; }
-.authflow-submit:focus-visible, .authflow-social button:focus-visible, .authflow-screen-switch:focus-visible, .authflow-inline-action:focus-visible { outline: 3px solid color-mix(in srgb, var(--authflow-primary) 35%, transparent); outline-offset: 2px; }
+.authflow-submit { width: 100%; min-height: 46px; margin-top: 21px; padding: 0 18px; border: 0; border-radius: max(7px, calc(var(--authflow-radius) * .6)); color: var(--authflow-primary-contrast); font: 750 13px Arial, sans-serif; cursor: pointer; }
+.authflow-submit:focus-visible, .authflow-social button:focus-visible, .authflow-screen-switch:focus-visible, .authflow-inline-action:focus-visible { outline: 3px solid var(--authflow-focus); outline-offset: 2px; }
 .authflow-inline-action { justify-self: end; margin: 11px 0 0; padding: 4px 0; border: 0; color: var(--authflow-primary); background: transparent; font-size: 11px; font-weight: 750; cursor: pointer; }
 .authflow-screen-switch { justify-self: center; margin-top: 18px; padding: 5px; border: 0; color: color-mix(in srgb, var(--authflow-text) 70%, transparent); background: transparent; font-size: 11px; cursor: pointer; }
 .authflow-screen-switch:hover { color: var(--authflow-primary); }
@@ -288,6 +288,19 @@ button:focus-visible, a:focus-visible { outline: 3px solid #2d7d61; outline-offs
 .builder-color-control > span:last-child { display: flex; align-items: center; gap: 9px; min-height: 38px; padding: 5px 8px; border: 1px solid #d5ded8; border-radius: 7px; }
 .builder-color-control input { width: 27px; height: 25px; padding: 0; border: 0; background: none; }
 .builder-color-control code { color: #59665f; font-size: 10px; }
+.builder-theme-presets { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px !important; margin: 0 !important; }
+.builder-theme-presets button { min-height: 34px; display: flex; align-items: center; gap: 7px; padding: 5px 7px; border: 1px solid #d5ded8; border-radius: 7px; color: #435249; background: white; font-size: 9px; font-weight: 750; cursor: pointer; }
+.builder-theme-presets button:focus-visible { outline: 3px solid #66ad8a45; outline-offset: 1px; }
+.builder-theme-presets button > span { width: 20px; height: 20px; flex: 0 0 auto; border: 1px solid #d4ddd7; border-radius: 5px; }
+.builder-contrast-report { gap: 8px !important; margin-top: 3px !important; padding-top: 12px; border-top: 1px solid #e2e8e4; }
+.builder-contrast-report > strong { color: #34463c; font-size: 10px; }
+.builder-contrast-report ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.builder-contrast-report li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 5px 7px; padding: 7px; border-radius: 6px; background: #f5f7f5; }
+.builder-contrast-report li > span { padding: 2px 5px; border-radius: 99px; font-size: 8px; font-weight: 800; }
+.builder-contrast-report li.passes > span { color: #145b39; background: #dff2e7; }
+.builder-contrast-report li.fails > span { color: #84231f; background: #fbe3e1; }
+.builder-contrast-report b, .builder-contrast-report code { font-size: 9px; }
+.builder-contrast-report small { grid-column: 2 / -1; color: #7b8780; font-size: 8px; }
 .builder-field-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .builder-field-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; border: 1px solid #dfe6e1; border-radius: 8px; background: #fbfcfb; }
 .builder-field-list li.selected { border-color: #3a7c5d; box-shadow: 0 0 0 2px #3a7c5d20; }

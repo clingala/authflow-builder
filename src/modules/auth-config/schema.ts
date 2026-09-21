@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { contrastRatio } from "@/modules/branding";
 
 const fieldIdSchema = z
   .string()
@@ -160,9 +161,10 @@ const relativeRedirectSchema = z
 const colorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a six-digit hexadecimal color");
 
 const optionalAssetUrlSchema = z.string().max(500).refine((value) => {
-  if (value.startsWith("/") && !value.startsWith("//")) return true;
+  if (value.startsWith("/") && !value.startsWith("//") && !value.includes("\\") && !/[\u0000-\u001F]/.test(value)) return true;
   try {
-    return new URL(value).protocol === "https:";
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password;
   } catch {
     return false;
   }
@@ -311,6 +313,13 @@ export const authFlowConfigSchema = z
     }
     if (config.verification.email.enabled) requiredField("email", ["verification", "email"]);
     if (config.verification.phone.enabled) requiredField("phone", ["verification", "phone"]);
+
+    if (contrastRatio(config.branding.textColor, config.branding.surfaceColor) < 4.5) {
+      context.addIssue({ code: "custom", message: "Text and surface colors must meet WCAG AA contrast (4.5:1)", path: ["branding", "textColor"] });
+    }
+    if (contrastRatio(config.branding.textColor, config.branding.backgroundColor) < 4.5) {
+      context.addIssue({ code: "custom", message: "Text and background colors must meet WCAG AA contrast (4.5:1)", path: ["branding", "backgroundColor"] });
+    }
 
     if (new Set(config.recovery.methods).size !== config.recovery.methods.length) {
       context.addIssue({ code: "custom", message: "Recovery methods must be unique", path: ["recovery", "methods"] });

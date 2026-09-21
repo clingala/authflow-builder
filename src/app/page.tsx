@@ -15,6 +15,7 @@ const phases = [
   { name: "Authentication runtime", detail: "Tenant-scoped email/password identities and sessions", state: "Complete" },
   { name: "Verification & recovery", detail: "Hashed challenges, delivery adapters, and reset transactions", state: "Complete" },
   { name: "Google OAuth", detail: "State, PKCE, verified identity, and project-scoped linking", state: "Complete" },
+  { name: "Branding safety", detail: "Theme presets, WCAG contrast, and safe logo policies", state: "Complete" },
 ];
 
 export default function Home() {
@@ -38,7 +39,7 @@ export default function Home() {
 
         <div className="sidebar-note">
           <span className="status-dot" aria-hidden="true" />
-          <div><strong>Phase 9 ready</strong><small>Google OAuth security flow delivered</small></div>
+          <div><strong>Phase 10 ready</strong><small>Accessible branding safeguards delivered</small></div>
         </div>
       </aside>
 
@@ -81,7 +82,7 @@ export default function Home() {
         <section id="roadmap" className="section-block" aria-labelledby="roadmap-title">
           <div className="section-heading">
             <div><p className="eyebrow">Build status</p><h2 id="roadmap-title">A production foundation, built in phases</h2></div>
-            <span className="phase-counter">09 / 15</span>
+            <span className="phase-counter">10 / 15</span>
           </div>
           <div className="phase-grid">
             {phases.map((phase, index) => (

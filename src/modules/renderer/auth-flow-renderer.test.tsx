@@ -88,4 +88,13 @@ describe("AuthFlowRenderer", () => {
     expect(screen.getByLabelText("Verification Code *")).toBeInTheDocument();
     expect(screen.getByText(/Codes expire after 10 minutes/)).toBeInTheDocument();
   });
+
+  it("derives accessible button and focus colors from branding", () => {
+    const config = createDefaultAuthFlowConfig({ appName: "Portal", accountType: "Member" });
+    config.branding.primaryColor = "#F4D35E";
+    const { container } = render(<AuthFlowRenderer config={config} screen="login" />);
+    const renderer = container.querySelector<HTMLElement>(".authflow-renderer")!;
+    expect(renderer.style.getPropertyValue("--authflow-primary-contrast")).toBe("#000000");
+    expect(renderer.style.getPropertyValue("--authflow-focus")).toBe("#000000");
+  });
 });

@@ -3,6 +3,7 @@
 import type { CSSProperties, FormEvent, ReactNode } from "react";
 
 import type { AuthFlowConfig, RegistrationField } from "@/modules/auth-config";
+import { accessibleFocusColor, accessibleTextColor } from "@/modules/branding";
 
 import { FieldRenderer } from "./field-renderer";
 
@@ -25,6 +26,8 @@ type ThemeStyle = CSSProperties & {
   "--authflow-surface": string;
   "--authflow-text": string;
   "--authflow-radius": string;
+  "--authflow-primary-contrast": string;
+  "--authflow-focus": string;
 };
 
 const providerNames: Record<SocialProvider, string> = {
@@ -178,6 +181,8 @@ export function AuthFlowRenderer({ config, screen, errors, submitting = false, o
     "--authflow-surface": config.branding.surfaceColor,
     "--authflow-text": config.branding.textColor,
     "--authflow-radius": `${config.branding.borderRadius}px`,
+    "--authflow-primary-contrast": accessibleTextColor(config.branding.primaryColor),
+    "--authflow-focus": accessibleFocusColor(config.branding.primaryColor, config.branding.surfaceColor),
     fontFamily: fontStack(config.branding.fontFamily),
   };
 
@@ -193,7 +198,7 @@ export function AuthFlowRenderer({ config, screen, errors, submitting = false, o
           {config.branding.logoUrl ? (
             // Tenant logo URLs are restricted by the server schema to relative or HTTPS URLs.
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={config.branding.logoUrl} alt={`${config.app.name} logo`} />
+            <img src={config.branding.logoUrl} alt={`${config.app.name} logo`} width="34" height="34" referrerPolicy="no-referrer" />
           ) : <span aria-hidden="true">{config.app.name.slice(0, 1).toUpperCase()}</span>}
           <strong>{config.app.name}</strong>
         </header>
