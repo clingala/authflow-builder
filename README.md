@@ -2,7 +2,7 @@
 
 AuthFlow Builder is a configuration-driven authentication experience builder for product teams and non-technical owners. The same validated configuration will drive the visual builder, live preview, runtime UI, JSON export, and future ChatGPT tools.
 
-Phases 1 through 11 are complete: architecture, application shell, PostgreSQL/Prisma persistence, Better Auth owner sessions, owner-scoped project APIs, versioned configuration storage, audit events, the strict AuthFlow schema, safe defaults, templates, the accessible configuration-driven renderer, the visual builder, recoverable drafts, project-scoped authentication execution, verification and recovery, Google OAuth, accessible branding safeguards, and validated export/integration artifacts.
+Phases 1 through 12 are complete: architecture, application shell, PostgreSQL/Prisma persistence, Better Auth owner sessions, owner-scoped project APIs, versioned configuration storage, audit events, the strict AuthFlow schema, safe defaults, templates, the accessible configuration-driven renderer, the visual builder, recoverable drafts, project-scoped authentication execution, verification and recovery, Google OAuth, accessible branding safeguards, validated exports, and the scoped structured tool layer.
 
 ## Start locally
 
@@ -32,7 +32,7 @@ Each active project has a real hosted authentication page at `/auth/:projectId`.
 pnpm check
 ```
 
-Read [the full MVP plan](docs/MVP-PLAN.md), the [Phase 10 delivery note](docs/PHASE-10.md), and the [Phase 11 delivery note](docs/PHASE-11.md). The next implementation stage is Phase 12: the ChatGPT-compatible structured tool/API layer.
+Read [the full MVP plan](docs/MVP-PLAN.md), the [Phase 11 delivery note](docs/PHASE-11.md), and the [Phase 12 delivery note](docs/PHASE-12.md). The next implementation stage is Phase 13: the security review and threat model.
 
 ## Security posture
 

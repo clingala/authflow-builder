@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 
 import { getAuth } from "@/lib/auth/server";
 import { ProjectNotFoundError, ProjectRevisionConflictError } from "@/modules/projects";
+import { ToolAuthorizationError, UnknownToolError } from "@/modules/tool-api";
 
 export class UnauthorizedError extends Error {}
 export class ForbiddenError extends Error {}
@@ -48,6 +49,18 @@ export function errorResponse(error: unknown) {
     return NextResponse.json(
       { data: null, error: { code: "FORBIDDEN", message: "The request origin is not allowed" } },
       { status: 403 },
+    );
+  }
+  if (error instanceof ToolAuthorizationError) {
+    return NextResponse.json(
+      { data: null, error: { code: "INSUFFICIENT_SCOPE", message: "The caller lacks the required tool scope", requiredScope: error.requiredScope } },
+      { status: 403 },
+    );
+  }
+  if (error instanceof UnknownToolError) {
+    return NextResponse.json(
+      { data: null, error: { code: "TOOL_NOT_FOUND", message: "Tool not found" } },
+      { status: 404 },
     );
   }
   if (error instanceof ProjectNotFoundError) {
