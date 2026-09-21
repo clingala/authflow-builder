@@ -223,7 +223,7 @@ Domain modules expose a small `index.ts` public surface. UI never imports databa
 10. Branding: safe tokens, logo policy, contrast feedback, theme preview. **Complete.**
 11. Export: validated/versioned JSON and one React/Next.js component target. **Complete.**
 12. ChatGPT tools: structured tool registry and adapters using the same services and OAuth scopes. **Complete.**
-13. Security review: threat model, abuse cases, dependency and configuration review.
+13. Security review: threat model, abuse cases, dependency and configuration review. **Complete.**
 14. Automated testing: complete integration/E2E/authorization matrix and CI gates.
 15. Deployment docs: containers, migrations, secrets, backups, monitoring, runbooks.
 

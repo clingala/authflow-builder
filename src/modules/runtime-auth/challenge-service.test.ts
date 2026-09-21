@@ -13,6 +13,7 @@ class ChallengeStore implements RuntimeAuthStore {
   challenges: RuntimeChallenge[] = [];
   sessions: RuntimeSession[] = [];
   events: RuntimeAuthEventInput[] = [];
+  rateLimitActions: string[] = [];
   constructor() {
     const config = createDefaultAuthFlowConfig({ appName: "Portal", accountType: "Member" });
     config.verification.email = { enabled: true, method: "otp" };
@@ -34,7 +35,7 @@ class ChallengeStore implements RuntimeAuthStore {
   async setVerified(_id: string, channel: "email" | "phone") { if (channel === "email") this.user.emailVerified = true; else this.user.phoneVerified = true; }
   async updatePasswordAndRevokeSessions(_id: string, hash: string, at: Date) { this.user.passwordHash = hash; for (const session of this.sessions) session.revokedAt = at; }
   async recordEvent(input: RuntimeAuthEventInput) { this.events.push(input); }
-  async consumeRateLimit() { return { allowed: true, retryAfterSeconds: 0 }; }
+  async consumeRateLimit(input: { action: string }) { this.rateLimitActions.push(input.action); return { allowed: true, retryAfterSeconds: 0 }; }
 }
 
 function setup() {
@@ -62,9 +63,17 @@ describe("RuntimeChallengeService", () => {
   });
 
   it("returns the same accepted recovery response for unknown accounts without delivery", async () => {
-    const { service, messages } = setup();
+    const { service, store, messages } = setup();
     await expect(service.requestRecovery(projectId, { identifier: "missing@example.test", method: "email_link" }, {})).resolves.toEqual({ accepted: true });
     expect(messages).toHaveLength(0);
+    expect(store.rateLimitActions).toEqual(["recover_password"]);
+  });
+
+  it("applies the same pre-lookup limit to existing and unknown recovery identifiers", async () => {
+    const { service, store } = setup();
+    await service.requestRecovery(projectId, { identifier: "missing@example.test", method: "email_link" }, { ipHash: "ip" });
+    await service.requestRecovery(projectId, { identifier: store.user.email, method: "email_link" }, { ipHash: "ip" });
+    expect(store.rateLimitActions).toEqual(["recover_password", "recover_password"]);
   });
 
   it("uses a single-use reset token, hashes the new password, and revokes sessions", async () => {

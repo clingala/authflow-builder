@@ -34,6 +34,7 @@ export class RuntimeChallengeService {
     if (!project) throw new RuntimeProjectNotFoundError();
     const input = verificationRequestSchema.parse(rawInput);
     if (!this.delivery.available) throw new RuntimeDeliveryUnavailableError();
+    await this.enforceRequestLimit(project.id, input.channel === "email" ? "verify_email" : "verify_phone", input.identifier, project.config.verification.otp, context.ipHash);
     const user = await this.findUser(project.id, input.identifier);
     if (!user) return { accepted: true };
     const method = input.channel === "email" ? project.config.verification.email : project.config.verification.phone;
@@ -65,6 +66,7 @@ export class RuntimeChallengeService {
     const input = recoveryRequestSchema.parse(rawInput);
     if (!this.delivery.available) throw new RuntimeDeliveryUnavailableError();
     if (!project.config.recovery.enabled || !project.config.recovery.methods.includes(input.method)) throw new RuntimeMethodUnavailableError();
+    await this.enforceRequestLimit(project.id, "recover_password", input.identifier, project.config.verification.otp, context.ipHash);
     const user = await this.findUser(project.id, input.identifier);
     if (!user) return { accepted: true };
     const target = input.method === "phone_otp" ? this.phoneOf(user) : user.email;
@@ -87,8 +89,6 @@ export class RuntimeChallengeService {
   }
 
   private async issue(projectId: string, user: RuntimeUser, purpose: RuntimeChallenge["purpose"], channel: RuntimeChallenge["channel"], target: string, otp: { ttlSeconds: number; resendCooldownSeconds: number; maxResends: number }, context: RuntimeRequestContext) {
-    const limit = await this.consumeLimit(projectId, purpose, target, context.ipHash, otp.maxResends, Math.max(otp.ttlSeconds, 3600));
-    if (!limit.allowed) throw new RuntimeRateLimitedError(limit.retryAfterSeconds);
     const now = this.now();
     const expiresAt = new Date(now.getTime() + otp.ttlSeconds * 1000);
     const targetHash = this.hmac(`target:${target.trim().toLowerCase()}`);
@@ -132,6 +132,10 @@ export class RuntimeChallengeService {
     return typeof phone === "string" ? phone : null;
   }
   private hmac(value: string) { return createHmac("sha256", this.secret).update(value).digest("hex"); }
+  private async enforceRequestLimit(projectId: string, action: string, identifier: string, otp: { ttlSeconds: number; maxResends: number }, ipHash: string | undefined) {
+    const limit = await this.consumeLimit(projectId, action, identifier, ipHash, otp.maxResends, Math.max(otp.ttlSeconds, 3600));
+    if (!limit.allowed) throw new RuntimeRateLimitedError(limit.retryAfterSeconds);
+  }
   private consumeLimit(projectId: string, action: string, target: string, ipHash: string | undefined, limit: number, windowSeconds: number) {
     const identity = this.hmac(`${projectId}:${action}:${target.trim().toLowerCase()}:${ipHash ?? ""}`);
     return this.store.consumeRateLimit({ keyHash: identity, projectId, action, limit, windowSeconds, now: this.now() });

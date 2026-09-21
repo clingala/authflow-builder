@@ -3,3 +3,6 @@ allowBuilds:
   esbuild: true
   prisma: true
   unrs-resolver: false
+overrides:
+  deepmerge-ts: 8.0.0
+  mysql2: 3.23.1

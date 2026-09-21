@@ -6,7 +6,12 @@ const databaseEnvSchema = z.object({
 
 const authEnvSchema = databaseEnvSchema.extend({
   AUTH_SECRET: z.string().min(32, "AUTH_SECRET must contain at least 32 characters"),
-  APP_URL: z.string().url(),
+  APP_URL: z.string().url().refine((value) => ["http:", "https:"].includes(new URL(value).protocol), "APP_URL must use HTTP or HTTPS"),
+  NODE_ENV: z.enum(["development", "test", "production"]).optional(),
+}).superRefine((environment, context) => {
+  if (environment.NODE_ENV === "production" && new URL(environment.APP_URL).protocol !== "https:") {
+    context.addIssue({ code: "custom", message: "APP_URL must use HTTPS in production", path: ["APP_URL"] });
+  }
 });
 
 export type DatabaseEnvironment = z.infer<typeof databaseEnvSchema>;

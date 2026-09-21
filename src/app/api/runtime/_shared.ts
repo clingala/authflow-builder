@@ -41,7 +41,7 @@ export function requireRuntimeWriteOrigin(request: NextRequest) {
 }
 
 export function runtimeDataResponse<T>(data: T, status = 200) {
-  return NextResponse.json({ data, error: null }, { status });
+  return NextResponse.json({ data, error: null }, { status, headers: { "Cache-Control": "private, no-store" } });
 }
 
 export function setRuntimeSessionCookie(response: NextResponse, projectId: string, session: { token: string; expiresAt: Date }) {
@@ -70,7 +70,7 @@ export function runtimeErrorResponse(error: unknown) {
   if (error instanceof RuntimeUnsupportedConfigError) return errorJson(409, "UNSUPPORTED_CONFIGURATION", "This project is not configured for email and password authentication");
   if (error instanceof RuntimeAccountExistsError) return errorJson(409, "ACCOUNT_EXISTS", "An account already exists with that email address");
   if (error instanceof RuntimeInvalidCredentialsError) return errorJson(401, "INVALID_CREDENTIALS", "The email or password is incorrect");
-  if (error instanceof RuntimeVerificationRequiredError) return NextResponse.json({ data: null, error: { code: "VERIFICATION_REQUIRED", message: "Account verification is required", channels: error.channels } }, { status: 403 });
+  if (error instanceof RuntimeVerificationRequiredError) return NextResponse.json({ data: null, error: { code: "VERIFICATION_REQUIRED", message: "Account verification is required", channels: error.channels } }, { status: 403, headers: { "Cache-Control": "private, no-store" } });
   if (error instanceof RuntimeDeliveryUnavailableError) return errorJson(503, "DELIVERY_UNAVAILABLE", "Email or SMS delivery is not configured for this installation");
   if (error instanceof RuntimeMethodUnavailableError) return errorJson(409, "METHOD_UNAVAILABLE", "That verification or recovery method is not available");
   if (error instanceof RuntimeOAuthUnavailableError) return errorJson(503, "OAUTH_UNAVAILABLE", "Google authentication is not configured for this installation");
@@ -82,19 +82,19 @@ export function runtimeErrorResponse(error: unknown) {
   if (error instanceof RuntimeRateLimitedError) {
     return NextResponse.json(
       { data: null, error: { code: "RATE_LIMITED", message: "Too many attempts. Try again later.", retryAfterSeconds: error.retryAfterSeconds } },
-      { status: 429, headers: { "Retry-After": String(error.retryAfterSeconds) } },
+      { status: 429, headers: { "Cache-Control": "private, no-store", "Retry-After": String(error.retryAfterSeconds) } },
     );
   }
   if (error instanceof RegistrationValidationError) {
-    return NextResponse.json({ data: null, error: { code: "VALIDATION_FAILED", message: "Check the highlighted fields", fields: error.issues } }, { status: 400 });
+    return NextResponse.json({ data: null, error: { code: "VALIDATION_FAILED", message: "Check the highlighted fields", fields: error.issues } }, { status: 400, headers: { "Cache-Control": "private, no-store" } });
   }
   if (error instanceof ZodError) {
-    return NextResponse.json({ data: null, error: { code: "VALIDATION_FAILED", message: "The request is invalid" } }, { status: 400 });
+    return NextResponse.json({ data: null, error: { code: "VALIDATION_FAILED", message: "The request is invalid" } }, { status: 400, headers: { "Cache-Control": "private, no-store" } });
   }
   console.error("Unhandled runtime authentication error", error);
   return errorJson(500, "INTERNAL_ERROR", "The authentication request could not be completed");
 }
 
 function errorJson(status: number, code: string, message: string) {
-  return NextResponse.json({ data: null, error: { code, message } }, { status });
+  return NextResponse.json({ data: null, error: { code, message } }, { status, headers: { "Cache-Control": "private, no-store" } });
 }
