@@ -37,6 +37,14 @@ describe("AuthFlowBuilder", () => {
     expect(screen.getByText("v3")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Builder sections" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Live authentication preview" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Export JSON" })).toHaveAttribute(
+      "href",
+      "/api/v1/projects/891e05e7-26b1-42ef-8f7c-2c7722125342/config/export",
+    );
+    expect(screen.getByRole("link", { name: "Next.js starter" })).toHaveAttribute(
+      "href",
+      "/api/v1/projects/891e05e7-26b1-42ef-8f7c-2c7722125342/config/export?target=nextjs",
+    );
     expect(screen.getByRole("button", { name: "Save configuration" })).toBeDisabled();
   });
 

@@ -59,6 +59,8 @@ export function AuthFlowBuilder({ project }: { project: BuilderProject }) {
         </div>
         <div className="auth-builder-actions">
           <span className={builder.dirty ? "dirty" : ""}>{builder.dirty ? "Unsaved changes" : builder.saveState === "saved" ? "Saved" : "Up to date"}</span>
+          <a className="button secondary" href={`/api/v1/projects/${project.id}/config/export`} download>Export JSON</a>
+          <a className="button secondary" href={`/api/v1/projects/${project.id}/config/export?target=nextjs`} download>Next.js starter</a>
           <button type="button" className="button secondary" disabled={!builder.dirty || builder.saveState === "saving"} onClick={builder.reset}>Discard</button>
           <button type="button" className="button primary" disabled={!builder.dirty || builder.saveState === "saving"} onClick={() => void builder.save()}>{builder.saveState === "saving" ? "Saving…" : "Save configuration"}</button>
         </div>

@@ -221,7 +221,7 @@ Domain modules expose a small `index.ts` public surface. UI never imports databa
 8. Verification/recovery: hashed challenges, TTL, limits, adapter contracts, recovery transactions. **Complete.**
 9. Social auth: real Google adapter, PKCE/state/callback tests; no mock success path. **Complete.**
 10. Branding: safe tokens, logo policy, contrast feedback, theme preview. **Complete.**
-11. Export: validated/versioned JSON and one React/Next.js component target.
+11. Export: validated/versioned JSON and one React/Next.js component target. **Complete.**
 12. ChatGPT tools: remote MCP/App SDK server using the same services and OAuth scopes.
 13. Security review: threat model, abuse cases, dependency and configuration review.
 14. Automated testing: complete integration/E2E/authorization matrix and CI gates.
