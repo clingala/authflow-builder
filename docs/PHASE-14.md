@@ -27,7 +27,7 @@ CI installs only Chromium and its Linux dependencies after the regular productio
 
 ## Local commands
 
-Run `pnpm check` for Prisma validation, lint, TypeScript, Vitest and a production build. Install the browser once with `pnpm exec playwright install chromium`, then run `pnpm test:e2e`. The Playwright web server uses the production build on port 3100 and reuses an existing server locally when available.
+Run `pnpm check` for Prisma validation, lint, TypeScript, Vitest and a production build. Install the browser once with `pnpm exec playwright install chromium`, then run `pnpm test:e2e`. The Playwright web server uses the generated standalone production artifact on port 3100 and reuses an existing server locally when available.
 
 ## Deferred deployment tests
 

@@ -1,0 +1,58 @@
+name: authflow-builder-production
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: authflow_builder
+      POSTGRES_USER: authflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the deployment secret store}
+    volumes:
+      - authflow_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authflow -d authflow_builder"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    build:
+      context: .
+      target: migrate
+    environment:
+      DATABASE_URL: postgresql://authflow:${POSTGRES_PASSWORD}@postgres:5432/authflow_builder
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+      args:
+        DEPLOYMENT_VERSION: ${DEPLOYMENT_VERSION:-local-production}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://authflow:${POSTGRES_PASSWORD}@postgres:5432/authflow_builder
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in the deployment secret store}
+      APP_URL: ${APP_URL:?Set APP_URL to the public HTTPS origin}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      AUTHFLOW_DELIVERY_WEBHOOK_URL: ${AUTHFLOW_DELIVERY_WEBHOOK_URL:-}
+      AUTHFLOW_DELIVERY_WEBHOOK_SECRET: ${AUTHFLOW_DELIVERY_WEBHOOK_SECRET:-}
+    ports:
+      - "3000:3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.next/cache:uid=1001,gid=1001,mode=0700
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  authflow_postgres_data:

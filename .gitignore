@@ -8,6 +8,8 @@ test-results/
 dist/
 *.tsbuildinfo
 .env
+.env.*
+.env.production
 .env.local
 .env.*.local
 !.env.example

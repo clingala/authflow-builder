@@ -1,6 +1,6 @@
 # AuthFlow Builder — MVP architecture and implementation plan
 
-Status: accepted implementation plan, 2026-09-20. Phases 1 through 14 are implemented in this repository.
+Status: accepted implementation plan, 2026-09-20. All 15 planned MVP phases are implemented in this repository.
 
 ## 1. Final MVP feature list
 
@@ -225,7 +225,7 @@ Domain modules expose a small `index.ts` public surface. UI never imports databa
 12. ChatGPT tools: structured tool registry and adapters using the same services and OAuth scopes. **Complete.**
 13. Security review: threat model, abuse cases, dependency and configuration review. **Complete.**
 14. Automated testing: complete integration/E2E/authorization matrix and CI gates. **Complete.**
-15. Deployment docs: containers, migrations, secrets, backups, monitoring, runbooks.
+15. Deployment docs: containers, migrations, secrets, backups, monitoring, runbooks. **Complete.**
 
 Each phase starts with its contract/test plan, lists touched files in its delivery note, and ends with lint, typecheck, unit/integration tests, and production build. A phase does not hide or waive failures.
 

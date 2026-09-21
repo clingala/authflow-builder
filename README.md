@@ -2,7 +2,7 @@
 
 AuthFlow Builder is a configuration-driven authentication experience builder for product teams and non-technical owners. The same validated configuration will drive the visual builder, live preview, runtime UI, JSON export, and future ChatGPT tools.
 
-Phases 1 through 14 are complete: architecture, application shell, PostgreSQL/Prisma persistence, Better Auth owner sessions, owner-scoped project APIs, versioned configuration storage, audit events, the strict AuthFlow schema, safe defaults, templates, the accessible configuration-driven renderer, the visual builder, recoverable drafts, project-scoped authentication execution, verification and recovery, Google OAuth, accessible branding safeguards, validated exports, the scoped structured tool layer, security hardening, and the automated unit/integration/browser test matrix.
+All 15 planned MVP phases are complete: architecture, persistence, owner sessions, project APIs, the strict AuthFlow schema, accessible configuration-driven rendering, the visual builder, recoverable drafts, project-scoped authentication, verification and recovery, Google OAuth, branding, export, structured tools, security hardening, automated browser tests, and deployment preparation.
 
 ## Start locally
 
@@ -19,6 +19,7 @@ pnpm dev
 ```
 
 Open `http://localhost:3000`. The health contract is at `http://localhost:3000/api/health`.
+Database readiness is available at `http://localhost:3000/api/ready`.
 
 The standalone authentication renderer preview is available at `http://localhost:3000/preview`.
 
@@ -34,7 +35,7 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-Read [the full MVP plan](docs/MVP-PLAN.md), the [Phase 13 security review](docs/PHASE-13.md), the [Phase 14 testing note](docs/PHASE-14.md), and the [security policy](SECURITY.md). The next implementation stage is Phase 15: deployment documentation and operational preparation.
+Read [the full MVP plan](docs/MVP-PLAN.md), the [deployment guide](docs/DEPLOYMENT.md), the [operations runbook](docs/RUNBOOK.md), the [Phase 15 delivery note](docs/PHASE-15.md), and the [security policy](SECURITY.md).
 
 ## Security posture
 

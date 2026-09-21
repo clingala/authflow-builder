@@ -18,7 +18,8 @@ export default defineConfig({
     { name: "mobile-chromium", use: { ...devices["Pixel 7"] } },
   ],
   webServer: {
-    command: `pnpm start --port ${port}`,
+    command: "node scripts/start-standalone.mjs",
+    env: { PORT: String(port), HOSTNAME: "127.0.0.1" },
     url: `http://127.0.0.1:${port}/api/health`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

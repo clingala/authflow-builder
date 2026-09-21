@@ -4,6 +4,8 @@ import { securityHeaders } from "./src/lib/security/headers";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
+  output: "standalone",
+  deploymentId: process.env.DEPLOYMENT_VERSION,
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {
