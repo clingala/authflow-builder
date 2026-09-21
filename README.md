@@ -35,7 +35,7 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-Read [the full MVP plan](docs/MVP-PLAN.md), the [deployment guide](docs/DEPLOYMENT.md), the [operations runbook](docs/RUNBOOK.md), the [Phase 15 delivery note](docs/PHASE-15.md), and the [security policy](SECURITY.md).
+Read [the full MVP plan](docs/MVP-PLAN.md), the [language-independent platform guide](docs/PLATFORM.md), the [platform OpenAPI contract](docs/openapi.platform.yaml), the [deployment guide](docs/DEPLOYMENT.md), the [operations runbook](docs/RUNBOOK.md), the [Phase 15 delivery note](docs/PHASE-15.md), and the [security policy](SECURITY.md).
 
 ## Security posture
 

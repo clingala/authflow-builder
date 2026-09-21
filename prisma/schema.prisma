@@ -101,10 +101,27 @@ model Project {
   runtimeChallenges RuntimeChallenge[]
   runtimeOAuthAccounts RuntimeOAuthAccount[]
   runtimeOAuthTransactions RuntimeOAuthTransaction[]
+  applicationClients ApplicationClient[]
 
   @@unique([ownerId, slug])
   @@index([ownerId, status, updatedAt])
   @@map("projects")
+}
+
+model ApplicationClient {
+  id              String   @id @default(uuid()) @db.Uuid
+  projectId       String   @db.Uuid
+  name            String   @db.VarChar(80)
+  clientId        String   @unique @db.VarChar(80)
+  redirectUris    String[]
+  allowedOrigins  String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+  @@map("application_clients")
 }
 
 model AuthConfigVersion {

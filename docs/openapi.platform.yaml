@@ -1,0 +1,53 @@
+openapi: 3.1.0
+info:
+  title: AuthFlow Platform API
+  version: 0.1.0
+  description: Framework-neutral HTTPS API for AuthFlow application clients.
+servers:
+  - url: https://auth.example.com
+paths:
+  /api/platform/v1/clients/{clientId}/configuration:
+    get:
+      operationId: getClientConfiguration
+      summary: Read a validated public authentication configuration
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            pattern: '^af_pk_[A-Za-z0-9_-]{32,64}$'
+      responses:
+        '200':
+          description: Client and authentication configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigurationResponse'
+        '403': { description: Browser origin is not registered }
+        '404': { description: Client does not exist or its project is inactive }
+components:
+  schemas:
+    ConfigurationResponse:
+      type: object
+      required: [data, error]
+      properties:
+        data:
+          type: object
+          required: [client, projectId, configuration, endpoints]
+          properties:
+            client:
+              type: object
+              required: [clientId, name]
+              properties:
+                clientId: { type: string }
+                name: { type: string }
+            projectId: { type: string, format: uuid }
+            configuration:
+              type: object
+              description: AuthFlow schemaVersion 1 configuration validated by the server.
+              additionalProperties: true
+            endpoints:
+              type: object
+              additionalProperties: { type: string, format: uri }
+        error: { type: 'null' }
