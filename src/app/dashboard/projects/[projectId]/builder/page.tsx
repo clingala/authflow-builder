@@ -5,6 +5,7 @@ import { getAuth } from "@/lib/auth/server";
 import { parseAuthFlowConfig } from "@/modules/auth-config";
 import { AuthFlowBuilder } from "@/modules/builder";
 import { getProjectService, ProjectNotFoundError } from "@/modules/projects";
+import { getApplicationClientService } from "@/modules/application-clients";
 
 export const dynamic = "force-dynamic";
 
@@ -23,5 +24,9 @@ export default async function BuilderPage({ params }: { params: Promise<{ projec
 
   const { projectId } = await params;
   const project = await loadOwnedProject(session.user.id, projectId);
-  return <AuthFlowBuilder project={{ id: project.id, version: project.currentVersion, config: parseAuthFlowConfig(project.config) }} />;
+  const applicationClients = await getApplicationClientService().list(session.user.id, projectId);
+  return <AuthFlowBuilder
+    project={{ id: project.id, version: project.currentVersion, config: parseAuthFlowConfig(project.config) }}
+    applicationClients={applicationClients.map((client) => ({ ...client, createdAt: client.createdAt.toISOString(), updatedAt: client.updatedAt.toISOString() }))}
+  />;
 }

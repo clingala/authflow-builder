@@ -156,6 +156,26 @@ describe("AuthFlowBuilder", () => {
     expect(screen.getByRole("button", { name: "Save configuration" })).toBeEnabled();
   });
 
+  it("registers a language-independent application client", async () => {
+    const created = {
+      id: crypto.randomUUID(), projectId: project().id, name: "Java service", clientId: `af_pk_${"a".repeat(43)}`,
+      redirectUris: ["https://java.example/auth/callback"], allowedOrigins: ["https://java.example"],
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    };
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ data: created, error: null }), { status: 201, headers: { "Content-Type": "application/json" } })));
+    render(<AuthFlowBuilder project={project()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Integrations" }));
+    fireEvent.change(screen.getByLabelText("Application name"), { target: { value: "Java service" } });
+    fireEvent.change(screen.getByLabelText("Allowed browser origins"), { target: { value: "https://java.example" } });
+    fireEvent.change(screen.getByLabelText("Redirect URLs"), { target: { value: "https://java.example/auth/callback" } });
+    fireEvent.click(screen.getByRole("button", { name: "Register application" }));
+
+    expect(await screen.findByText(created.clientId)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("client ID is public");
+    expect(fetch).toHaveBeenCalledWith(`/api/v1/projects/${project().id}/clients`, expect.objectContaining({ method: "POST" }));
+  });
+
   it("blocks invalid drafts locally and explains semantic configuration errors", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);

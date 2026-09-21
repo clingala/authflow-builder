@@ -315,6 +315,28 @@ button:focus-visible, a:focus-visible { outline: 3px solid #2d7d61; outline-offs
 .builder-add-field { display: grid !important; grid-template-columns: 1fr auto; align-items: end; gap: 8px !important; margin-top: 4px !important; }
 .builder-add-field label { display: grid; gap: 5px; color: #4a5a51; font-size: 9px; font-weight: 750; }
 .builder-add-field button { min-height: 37px; padding: 0 12px; border: 0; border-radius: 7px; color: white; background: #245f47; font-size: 10px; font-weight: 750; cursor: pointer; }
+.integrations-panel > section:first-child h2 { margin: 3px 0 7px; font: 600 20px Georgia, serif; }
+.integrations-panel > section:first-child > p:last-child { margin: 0; color: #69776f; font-size: 10px; line-height: 1.55; }
+.integration-form { display: grid; gap: 11px; padding: 13px; border: 1px solid #dce5df; border-radius: 10px; background: #f8faf8; }
+.integration-form label { display: grid; gap: 5px; color: #405148; font-size: 10px; font-weight: 750; }
+.integration-form input, .integration-form textarea { width: 100%; padding: 8px 9px; border: 1px solid #d1dcd5; border-radius: 7px; color: var(--ink); background: white; font: 11px Arial, sans-serif; resize: vertical; }
+.integration-form input:focus, .integration-form textarea:focus { outline: 3px solid #66ad8a30; border-color: #3c7b60; }
+.integration-form small { color: #748078; font-size: 8px; line-height: 1.45; }
+.integration-message { margin: -8px 0 0; padding: 8px 10px; border-radius: 7px; color: #174532; background: #e5f3ea; font-size: 9px; line-height: 1.45; }
+.integration-clients { display: grid; gap: 9px; }
+.integration-clients > h3 { margin: 0; font-size: 12px; }
+.integration-clients > p { margin: 0; color: #76827b; font-size: 10px; }
+.integration-clients article { min-width: 0; display: grid; gap: 7px; padding: 11px; border: 1px solid #dce5df; border-radius: 9px; background: white; }
+.integration-clients article > header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.integration-clients article > header strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.integration-clients article > header button { border: 0; color: #9b332e; background: transparent; font-size: 9px; font-weight: 750; cursor: pointer; }
+.integration-clients article > label { color: #748078; font-size: 8px; font-weight: 750; text-transform: uppercase; }
+.integration-copy { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 5px; }
+.integration-copy code { overflow: hidden; padding: 6px 7px; border-radius: 5px; color: #34453c; background: #eef2ef; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.integration-copy button { min-height: 27px; padding: 0 7px; border: 1px solid #d5ded8; border-radius: 5px; background: white; font-size: 8px; font-weight: 750; cursor: pointer; }
+.integration-clients details { color: #647169; font-size: 9px; }
+.integration-clients summary { cursor: pointer; font-weight: 750; }
+.integration-clients ul { display: grid; gap: 3px; margin: 6px 0 0; padding-left: 15px; overflow-wrap: anywhere; }
 .builder-preview { min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); background: #e8ede9; }
 .builder-preview > header { min-height: 55px; display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 9px 16px; border-bottom: 1px solid #d5ddd7; background: #f8faf8; }
 .builder-preview > header nav, .builder-device-toggle { display: flex; gap: 3px; padding: 3px; border: 1px solid #d7dfd9; border-radius: 8px; background: white; }

@@ -8,9 +8,10 @@ import { BrandingPanel } from "./branding-panel";
 import { EmptyProperties, FieldProperties } from "./field-properties";
 import { GeneralPanel } from "./general-panel";
 import { LoginPanel } from "./login-panel";
+import { IntegrationsPanel } from "./integrations-panel";
 import { RecoveryPanel } from "./recovery-panel";
 import { RegistrationPanel } from "./registration-panel";
-import type { BuilderProject, BuilderSection, PreviewDevice } from "./types";
+import type { BuilderApplicationClient, BuilderProject, BuilderSection, PreviewDevice } from "./types";
 import { useAuthBuilder } from "./use-auth-builder";
 import { VerificationPanel } from "./verification-panel";
 
@@ -21,6 +22,7 @@ const sections: Array<{ id: BuilderSection; label: string }> = [
   { id: "verification", label: "Verification" },
   { id: "recovery", label: "Recovery" },
   { id: "branding", label: "Branding" },
+  { id: "integrations", label: "Integrations" },
 ];
 
 const previewScreens: Array<{ id: AuthFlowScreen; label: string }> = [
@@ -30,7 +32,7 @@ const previewScreens: Array<{ id: AuthFlowScreen; label: string }> = [
   { id: "recovery", label: "Recovery" },
 ];
 
-export function AuthFlowBuilder({ project }: { project: BuilderProject }) {
+export function AuthFlowBuilder({ project, applicationClients = [] }: { project: BuilderProject; applicationClients?: BuilderApplicationClient[] }) {
   const builder = useAuthBuilder(project);
   const [section, setSection] = useState<BuilderSection>("general");
   const [selectedFieldId, setSelectedFieldId] = useState<string>();
@@ -107,6 +109,7 @@ export function AuthFlowBuilder({ project }: { project: BuilderProject }) {
             {section === "verification" ? <VerificationPanel config={builder.draft} update={builder.update} /> : null}
             {section === "recovery" ? <RecoveryPanel config={builder.draft} update={builder.update} /> : null}
             {section === "branding" ? <BrandingPanel config={builder.draft} update={builder.update} /> : null}
+            {section === "integrations" ? <IntegrationsPanel projectId={project.id} initialClients={applicationClients} /> : null}
           </div>
         </aside>
 
