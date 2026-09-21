@@ -37,7 +37,13 @@ export function BrandingPanel({ config, update }: { config: AuthFlowConfig; upda
       </ControlGroup>
       <ControlGroup title="Colors">
         <div className="builder-theme-presets" aria-label="Theme presets">
-          {presets.map((preset) => <button key={preset.name} type="button" onClick={() => update((draft) => { Object.assign(draft.branding, preset); })}>
+          {presets.map((preset) => <button key={preset.name} type="button" onClick={() => update((draft) => {
+            draft.branding.primaryColor = preset.primaryColor;
+            draft.branding.backgroundColor = preset.backgroundColor;
+            draft.branding.surfaceColor = preset.surfaceColor;
+            draft.branding.textColor = preset.textColor;
+            delete (draft.branding as unknown as Record<string, unknown>).name;
+          })}>
             <span style={{ background: `linear-gradient(135deg, ${preset.primaryColor} 50%, ${preset.backgroundColor} 50%)` }} aria-hidden="true" />{preset.name}
           </button>)}
         </div>

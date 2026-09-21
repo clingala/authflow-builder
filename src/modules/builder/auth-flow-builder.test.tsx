@@ -147,6 +147,15 @@ describe("AuthFlowBuilder", () => {
     expect(screen.queryByLabelText("About You")).not.toBeInTheDocument();
   });
 
+  it("applies a branding preset without copying display metadata into configuration", () => {
+    render(<AuthFlowBuilder project={project()} />);
+    fireEvent.click(screen.getByRole("button", { name: "Branding" }));
+    fireEvent.click(screen.getByRole("button", { name: "Midnight" }));
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save configuration" })).toBeEnabled();
+  });
+
   it("blocks invalid drafts locally and explains semantic configuration errors", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
