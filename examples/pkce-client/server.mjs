@@ -15,9 +15,20 @@ const files = new Map([
 ]);
 const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8" };
 
+function safeConnectOrigin(rawIssuer) {
+  try {
+    const issuer = new URL(rawIssuer);
+    const isLocalHttp = issuer.protocol === "http:" && ["localhost", "127.0.0.1"].includes(issuer.hostname);
+    return isLocalHttp || issuer.protocol === "https:" ? issuer.origin : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 createServer(async (request, response) => {
   try {
-    const pathname = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`).pathname;
+    const requestUrl = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
+    const pathname = requestUrl.pathname;
     const filename = files.get(pathname);
     if (!filename) {
       response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
@@ -25,10 +36,11 @@ createServer(async (request, response) => {
       return;
     }
     const body = await readFile(join(root, filename));
+    const connectOrigin = safeConnectOrigin(requestUrl.searchParams.get("issuer")) || "http://localhost:4444";
     response.writeHead(200, {
       "Content-Type": types[extname(filename)] || "application/octet-stream",
       "Cache-Control": "no-store",
-      "Content-Security-Policy": "default-src 'self'; connect-src http://localhost:4444 http://127.0.0.1:4444; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      "Content-Security-Policy": `default-src 'self'; connect-src ${connectOrigin} http://127.0.0.1:4444; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`,
       "Referrer-Policy": "no-referrer",
       "X-Content-Type-Options": "nosniff",
     });

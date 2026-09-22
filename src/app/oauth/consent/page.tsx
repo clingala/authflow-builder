@@ -14,7 +14,7 @@ export default async function OAuthConsentPage({ searchParams }: { searchParams:
       <p><strong>{user.email}</strong> is signed in to {client.configuration.app.name}. The application is requesting:</p>
       <ul>{request.requested_scope.map((scope) => <li key={scope}>{scope === "openid" ? "Confirm your identity" : scope === "email" ? "Read your email address" : scope === "profile" ? "Read your basic profile" : scope === "offline_access" ? "Stay signed in when you are away" : scope}</li>)}</ul>
       <form method="post" action="/api/platform/v1/oauth/consent">
-        <input type="hidden" name="challenge" value={challenge} />
+        <input type="hidden" name="consentChallenge" value={challenge} />
         <button className="button secondary" type="submit" name="decision" value="deny">Deny</button>
         <button className="button primary" type="submit" name="decision" value="accept">Allow</button>
       </form>
