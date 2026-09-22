@@ -15,6 +15,10 @@ AuthFlow Builder ships as a stateless Next.js standalone container backed by Pos
 
 `compose.production.yaml` is a single-host reference, not a substitute for managed production infrastructure. It demonstrates the migration-before-app dependency, non-root/read-only application container, database health check and secret injection. Production should use a managed PostgreSQL service with point-in-time recovery.
 
+For the first managed staging deployment, follow the service-by-service
+[Railway guide](RAILWAY.md). It preserves the same migration-before-traffic
+contract and keeps Hydra's administrative API on private networking.
+
 ## Images and jobs
 
 ```bash
