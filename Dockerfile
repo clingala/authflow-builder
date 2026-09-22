@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM node:24.11.0-alpine AS base
+FROM node:26.9.0-alpine AS base
 ENV PNPM_HOME="/pnpm" \
     PATH="/pnpm:$PATH" \
     NEXT_TELEMETRY_DISABLED=1
@@ -28,7 +28,7 @@ FROM dependencies AS maintenance
 COPY . .
 CMD ["pnpm", "db:cleanup"]
 
-FROM node:24.11.0-alpine AS runner
+FROM node:26.9.0-alpine AS runner
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     HOSTNAME=0.0.0.0 \
