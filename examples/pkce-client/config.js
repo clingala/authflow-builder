@@ -1,5 +1,6 @@
 export const oauthConfig = Object.freeze({
-  clientId: "af_pk_YWOXCyLzMhoA3t5GhbfvrrnVPfnBsy-M0tFND-cLKrI",
+  // Paste a public client ID from the AuthFlow Builder Integrations panel.
+  clientId: "",
   issuer: "http://localhost:4444",
   // Docker Desktop may publish Hydra on IPv4 while Windows resolves localhost to IPv6.
   // Remove this override when the issuer is reachable directly in the deployment environment.

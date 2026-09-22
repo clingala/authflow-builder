@@ -16,6 +16,7 @@ const storageKeys = {
   state: "authflow.pkce.state",
   verifier: "authflow.pkce.verifier",
   nonce: "authflow.pkce.nonce",
+  clientId: "authflow.pkce.client-id",
 };
 
 let tokenSet;
@@ -48,6 +49,8 @@ async function discover() {
 
 async function beginSignIn() {
   try {
+    const clientId = elements.clientId.value.trim();
+    if (!clientId || clientId.length > 256) throw new Error("Enter a valid public client ID from AuthFlow Integrations.");
     setStatus("Preparing a secure PKCE request…");
     const discovery = await discover();
     const { verifier, challenge } = await createPkcePair();
@@ -56,10 +59,11 @@ async function beginSignIn() {
     sessionStorage.setItem(storageKeys.verifier, verifier);
     sessionStorage.setItem(storageKeys.state, state);
     sessionStorage.setItem(storageKeys.nonce, nonce);
+    sessionStorage.setItem(storageKeys.clientId, clientId);
 
     const authorization = new URL(discovery.authorization_endpoint);
     authorization.search = new URLSearchParams({
-      client_id: oauthConfig.clientId,
+      client_id: clientId,
       redirect_uri: oauthConfig.redirectUri,
       response_type: "code",
       scope: oauthConfig.scope,
@@ -77,8 +81,10 @@ async function beginSignIn() {
 async function exchangeCode(code, returnedState) {
   const expectedState = sessionStorage.getItem(storageKeys.state);
   const verifier = sessionStorage.getItem(storageKeys.verifier);
+  const clientId = sessionStorage.getItem(storageKeys.clientId);
   requireMatchingState(expectedState, returnedState);
   if (!verifier) throw new Error("The PKCE verifier is missing. Start the sign-in flow again.");
+  if (!clientId) throw new Error("The OAuth client ID is missing. Start the sign-in flow again.");
 
   const discovery = await discover();
   const response = await fetch(discovery.token_endpoint, {
@@ -86,7 +92,7 @@ async function exchangeCode(code, returnedState) {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type: "authorization_code",
-      client_id: oauthConfig.clientId,
+      client_id: clientId,
       redirect_uri: oauthConfig.redirectUri,
       code,
       code_verifier: verifier,
@@ -129,7 +135,7 @@ async function refreshAccessToken() {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
         grant_type: "refresh_token",
-        client_id: oauthConfig.clientId,
+        client_id: sessionStorage.getItem(storageKeys.clientId) || "",
         refresh_token: tokenSet.refresh_token,
       }),
     });
@@ -144,12 +150,13 @@ async function refreshAccessToken() {
 }
 
 function clearTransaction() {
-  Object.values(storageKeys).forEach((key) => sessionStorage.removeItem(key));
+  [storageKeys.state, storageKeys.verifier, storageKeys.nonce].forEach((key) => sessionStorage.removeItem(key));
 }
 
 function clearSession() {
   tokenSet = undefined;
   clearTransaction();
+  sessionStorage.removeItem(storageKeys.clientId);
   elements.output.hidden = true;
   elements.output.textContent = "";
   elements.refresh.disabled = true;
@@ -158,14 +165,14 @@ function clearSession() {
 }
 
 async function initialize() {
-  elements.clientId.textContent = oauthConfig.clientId;
+  const query = new URLSearchParams(window.location.search);
+  elements.clientId.value = query.get("client_id") || sessionStorage.getItem(storageKeys.clientId) || oauthConfig.clientId;
   elements.issuer.textContent = oauthConfig.issuer;
   elements.redirectUri.textContent = oauthConfig.redirectUri;
   elements.signIn.addEventListener("click", beginSignIn);
   elements.refresh.addEventListener("click", refreshAccessToken);
   elements.clear.addEventListener("click", clearSession);
 
-  const query = new URLSearchParams(window.location.search);
   if (query.has("error")) {
     clearTransaction();
     history.replaceState({}, "", "/");

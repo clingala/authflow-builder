@@ -13,6 +13,8 @@ dl div { min-width: 0; }
 dt { color: #65756f; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 dd { margin: 5px 0 0; overflow-wrap: anywhere; }
 code { color: #173f32; }
+input { width: 100%; min-height: 44px; padding: 0 12px; border: 1px solid #b8c7c0; border-radius: 10px; color: #173f32; font: 500 .9rem ui-monospace, monospace; }
+input:focus-visible { outline: 3px solid #f0a92e; outline-offset: 2px; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
 button { min-height: 46px; padding: 0 18px; border: 1px solid #184b3b; border-radius: 12px; background: #184b3b; color: white; font: inherit; font-weight: 750; cursor: pointer; }
 button.secondary { background: white; color: #184b3b; }
