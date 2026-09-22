@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:pkce-client": "node examples/pkce-client/server.mjs",
     "build": "next build",
     "postinstall": "prisma generate",
     "start": "next start",

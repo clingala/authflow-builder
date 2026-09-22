@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>AuthFlow PKCE Test Client</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">LANGUAGE-INDEPENDENT OAUTH TEST</p>
+        <h1 id="page-title">AuthFlow PKCE Client</h1>
+        <p>This dependency-free browser app verifies the real OpenID Connect Authorization Code flow with PKCE. It contains no client secret.</p>
+      </section>
+
+      <section class="card" aria-labelledby="connection-title">
+        <h2 id="connection-title">Connection</h2>
+        <dl>
+          <div><dt>Client ID</dt><dd><code id="client-id"></code></dd></div>
+          <div><dt>Issuer</dt><dd><code id="issuer"></code></dd></div>
+          <div><dt>Redirect URI</dt><dd><code id="redirect-uri"></code></dd></div>
+        </dl>
+        <div class="actions">
+          <button id="sign-in" type="button">Sign in with AuthFlow</button>
+          <button id="refresh-token" class="secondary" type="button" disabled>Rotate refresh token</button>
+          <button id="clear-session" class="secondary" type="button" disabled>Clear local state</button>
+        </div>
+        <p id="status" class="status" role="status" aria-live="polite">Ready to start.</p>
+        <pre id="output" hidden aria-label="OAuth result"></pre>
+      </section>
+
+      <aside>
+        <strong>Security behavior</strong>
+        <p>S256 PKCE, cryptographic state and nonce, exact redirect URI, discovery, no secret, and in-memory tokens. Raw tokens are never rendered or persisted.</p>
+      </aside>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

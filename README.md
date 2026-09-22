@@ -23,6 +23,15 @@ Database readiness is available at `http://localhost:3000/api/ready`.
 
 The standalone authentication renderer preview is available at `http://localhost:3000/preview`.
 
+The dependency-free OAuth/OIDC reference client is available at `http://localhost:5173` after running:
+
+```bash
+corepack pnpm dev:pkce-client
+```
+
+It exercises Authorization Code + S256 PKCE, state validation, discovery, UserInfo, and refresh-token rotation against the local Hydra service without a client secret. Its registered public client settings live in `examples/pkce-client/config.js`.
+The example includes an IPv4 transport override for Docker Desktop installations where Windows resolves `localhost` to IPv6; production clients should use the issuer URL directly.
+
 Owner authentication is available at `/sign-up` and `/sign-in`; authenticated project management is at `/dashboard`.
 
 Each active project has a real hosted authentication page at `/auth/:projectId`. It supports project-scoped email/password signup, sign-in, session validation, sign-out, email/phone verification challenges, and password recovery. Delivery is enabled only when the server-side webhook adapter is configured; the application never reports fake delivery success.
