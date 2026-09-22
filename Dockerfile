@@ -37,6 +37,13 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Railway executes the pre-deploy migration command inside the final image.
+# Keep the reviewed Prisma CLI, schema, and config available without fetching
+# packages or running migrations during application startup.
+COPY --from=dependencies --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 RUN mkdir -p .next/cache && chown nextjs:nodejs .next/cache
 USER nextjs
 EXPOSE 3000
