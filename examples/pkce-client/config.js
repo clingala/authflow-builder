@@ -19,7 +19,16 @@ function safeIssuer(value) {
 }
 
 const query = new URLSearchParams(window.location.search);
-const issuer = safeIssuer(query.get("issuer")) || defaults.issuer;
+const runtimeKeys = {
+  issuer: "authflow.pkce.issuer",
+  transportOrigin: "authflow.pkce.transport-origin",
+};
+const queryIssuer = safeIssuer(query.get("issuer"));
+const cachedIssuer = safeIssuer(sessionStorage.getItem(runtimeKeys.issuer));
+const issuer = queryIssuer || cachedIssuer || defaults.issuer;
+const queryTransportOrigin = safeIssuer(query.get("transport_origin"));
+const cachedTransportOrigin = safeIssuer(sessionStorage.getItem(runtimeKeys.transportOrigin));
+const transportOrigin = queryTransportOrigin || cachedTransportOrigin || (queryIssuer ? issuer : defaults.transportOrigin);
 
 // These query parameters make the reference client usable against any AuthFlow
 // deployment without committing a real client ID or deployment URL to source control.
@@ -27,5 +36,10 @@ export const oauthConfig = Object.freeze({
   ...defaults,
   clientId: query.get("client_id") || defaults.clientId,
   issuer,
-  transportOrigin: safeIssuer(query.get("transport_origin")) || (query.has("issuer") ? issuer : defaults.transportOrigin),
+  transportOrigin,
 });
+
+export function persistRuntimeConfig(config) {
+  sessionStorage.setItem(runtimeKeys.issuer, config.issuer);
+  sessionStorage.setItem(runtimeKeys.transportOrigin, config.transportOrigin);
+}
