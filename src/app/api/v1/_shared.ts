@@ -6,6 +6,7 @@ import { ProjectNotFoundError, ProjectRevisionConflictError } from "@/modules/pr
 import { ToolAuthorizationError, UnknownToolError } from "@/modules/tool-api";
 import { ApplicationClientNotFoundError } from "@/modules/application-clients";
 import { OAuthPlatformRequestError, OAuthPlatformUnavailableError } from "@/modules/oauth-platform";
+import { DeliveryProjectNotFoundError } from "@/modules/delivery-integrations";
 
 export class UnauthorizedError extends Error {}
 export class ForbiddenError extends Error {}
@@ -41,6 +42,9 @@ export function dataResponse<T>(data: T, init?: ResponseInit) {
 }
 
 export function errorResponse(error: unknown) {
+  if (error instanceof DeliveryProjectNotFoundError) {
+    return NextResponse.json({ data: null, error: { code: "NOT_FOUND", message: "Project not found" } }, { status: 404 });
+  }
   if (error instanceof OAuthPlatformUnavailableError) {
     return NextResponse.json(
       { data: null, error: { code: "OAUTH_PLATFORM_UNAVAILABLE", message: "The OAuth provider is temporarily unavailable" } },

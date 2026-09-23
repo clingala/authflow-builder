@@ -15,6 +15,8 @@ export class ResendDeliveryAdapter implements RuntimeDeliveryAdapter {
   readonly available = true;
   constructor(private readonly connection: ResendConnection, private readonly request: Fetcher = fetch) {}
 
+  supportsChannel(channel: "email" | "phone") { return channel === "email"; }
+
   async deliver(message: DeliveryMessage) {
     if (message.kind === "phone_verification_otp") throw new Error("Resend does not deliver SMS messages.");
     const subject = message.kind.startsWith("password_recovery") ? "Reset your password" : "Verify your email address";

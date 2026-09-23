@@ -23,14 +23,24 @@ until an SMS adapter is configured.
 - A failed or unconfigured adapter returns delivery unavailable; it never
   simulates a successful email or SMS.
 
-## Rollout sequence
+## Current integration
 
-1. Add persistence and owner-only API routes for an encrypted project
-   connection.
-2. Add the Delivery Integrations builder panel with a Resend form that never
-   re-displays the entered API key.
-3. Resolve the adapter per project at challenge-send time.
-4. Add audit events for connection changes and delivery-provider failures.
-5. Test verified sending domains, recovery, OTP expiry, rate limits, and tenant
-   isolation in staging before enabling a project.
+Run the `20260923190117_add_delivery_connections` migration before using the
+builder. Project owners can connect or rotate a Resend API key in the builder's
+Integrations section. The owner-only `/api/v1/projects/{projectId}/delivery`
+endpoint accepts GET, PUT, and DELETE; GET returns metadata only. Connection
+changes produce audit events. At challenge-send time, a project connection
+takes precedence over the installation-wide delivery webhook, if configured.
+Without either provider, delivery returns unavailable. A Resend connection
+supports email only; phone OTP still requires an SMS-capable provider.
 
+This integration does not verify a sender domain during connection setup.
+Owners must verify their domain with Resend before sending. No production
+credentials or sending domain are included in the repository. Rotating
+`AUTH_SECRET` invalidates encrypted project credentials until they are
+reconnected; plan a re-encryption migration before key rotation.
+
+Before production enablement, exercise real email delivery and recovery with
+a verified domain, plus OTP expiry, rate limits, and tenant isolation in a
+staging environment. Provider delivery failures still need dedicated audit
+events and operational alerting.

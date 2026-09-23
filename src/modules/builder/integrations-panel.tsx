@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import type { BuilderApplicationClient } from "./types";
+import { DeliveryIntegrationsPanel, type BuilderDeliveryConnection } from "./delivery-integrations-panel";
 
 type ApiEnvelope<T> = { data: T | null; error: { message?: string; issues?: Array<{ message: string }> } | null };
 
@@ -9,7 +10,7 @@ function lines(value: string) {
   return value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
 }
 
-export function IntegrationsPanel({ projectId, initialClients }: { projectId: string; initialClients: BuilderApplicationClient[] }) {
+export function IntegrationsPanel({ projectId, initialClients, initialDeliveryConnection = null }: { projectId: string; initialClients: BuilderApplicationClient[]; initialDeliveryConnection?: BuilderDeliveryConnection }) {
   const [clients, setClients] = useState(initialClients);
   const [name, setName] = useState("");
   const [origin, setOrigin] = useState("");
@@ -85,6 +86,7 @@ export function IntegrationsPanel({ projectId, initialClients }: { projectId: st
           </article>;
         })}
       </section>
+      <DeliveryIntegrationsPanel projectId={projectId} initialConnection={initialDeliveryConnection} />
     </div>
   );
 }
