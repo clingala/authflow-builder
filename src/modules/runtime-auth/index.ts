@@ -6,6 +6,7 @@ import { PrismaRuntimeAuthStore } from "./prisma-runtime-auth-store";
 import { RuntimeAuthService } from "./service";
 import { RuntimeChallengeService } from "./challenge-service";
 import { DisabledDeliveryAdapter, HttpDeliveryAdapter } from "./delivery";
+import { DeliveryConnectionService } from "@/modules/delivery-integrations";
 import { GoogleOAuthHttpAdapter, PrismaRuntimeOAuthStore, RuntimeOAuthService, RuntimeOAuthUnavailableError } from "./oauth";
 
 let service: RuntimeAuthService | undefined;
@@ -39,7 +40,8 @@ export function getRuntimeChallengeService() {
     throw new Error("AUTHFLOW_DELIVERY_WEBHOOK_URL must use HTTPS in production.");
   }
   const delivery = endpoint && token ? new HttpDeliveryAdapter(endpoint, token) : new DisabledDeliveryAdapter();
-  challengeService ??= new RuntimeChallengeService(store, betterAuthPasswordHasher, delivery, environment.AUTH_SECRET, environment.APP_URL);
+  const connections = new DeliveryConnectionService(getPrisma(), environment.AUTH_SECRET);
+  challengeService ??= new RuntimeChallengeService(store, betterAuthPasswordHasher, delivery, environment.AUTH_SECRET, environment.APP_URL, undefined, async (projectId) => (await connections.adapterForProject(projectId)) ?? delivery);
   return challengeService;
 }
 

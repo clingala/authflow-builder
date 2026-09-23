@@ -27,13 +27,21 @@ export class RuntimeChallengeService {
     private readonly secret: string,
     private readonly publicBaseUrl: string,
     private readonly now: () => Date = () => new Date(),
+    private readonly resolveDelivery?: (projectId: string) => Promise<RuntimeDeliveryAdapter>,
   ) {}
+
+  private deliveryFor(projectId: string) { return this.resolveDelivery?.(projectId) ?? Promise.resolve(this.delivery); }
+  private async requireDelivery(projectId: string, channel: "email" | "phone") {
+    const delivery = await this.deliveryFor(projectId);
+    if (!delivery.available || delivery.supportsChannel?.(channel) === false) throw new RuntimeDeliveryUnavailableError();
+    return delivery;
+  }
 
   async requestVerification(rawProjectId: string, rawInput: unknown, context: RuntimeRequestContext) {
     const project = await this.store.getProject(rawProjectId);
     if (!project) throw new RuntimeProjectNotFoundError();
     const input = verificationRequestSchema.parse(rawInput);
-    if (!this.delivery.available) throw new RuntimeDeliveryUnavailableError();
+    await this.requireDelivery(project.id, input.channel);
     await this.enforceRequestLimit(project.id, input.channel === "email" ? "verify_email" : "verify_phone", input.identifier, project.config.verification.otp, context.ipHash);
     const user = await this.findUser(project.id, input.identifier);
     if (!user) return { accepted: true };
@@ -64,7 +72,7 @@ export class RuntimeChallengeService {
     const project = await this.store.getProject(rawProjectId);
     if (!project) throw new RuntimeProjectNotFoundError();
     const input = recoveryRequestSchema.parse(rawInput);
-    if (!this.delivery.available) throw new RuntimeDeliveryUnavailableError();
+    await this.requireDelivery(project.id, input.method === "phone_otp" ? "phone" : "email");
     if (!project.config.recovery.enabled || !project.config.recovery.methods.includes(input.method)) throw new RuntimeMethodUnavailableError();
     await this.enforceRequestLimit(project.id, "recover_password", input.identifier, project.config.verification.otp, context.ipHash);
     const user = await this.findUser(project.id, input.identifier);
@@ -98,11 +106,12 @@ export class RuntimeChallengeService {
     await this.store.invalidateActiveChallenges({ projectId, runtimeUserId: user.id, purpose, now });
     await this.store.createChallenge({ projectId, runtimeUserId: user.id, purpose, channel, targetHash, secretHash: this.hmac(`secret:${secret}`), expiresAt, nextResendAt: new Date(now.getTime() + otp.resendCooldownSeconds * 1000) });
     const link = `${this.publicBaseUrl}/auth/${projectId}?${purpose === "recover_password" ? "recovery" : "verification"}=${encodeURIComponent(secret)}&identifier=${encodeURIComponent(target)}`;
-    if (purpose === "verify_email" && channel === "email_link") await this.delivery.deliver({ kind: "email_verification_link", to: target, link, expiresAt });
-    else if (purpose === "verify_email") await this.delivery.deliver({ kind: "email_verification_otp", to: target, code: secret, expiresAt });
-    else if (purpose === "verify_phone") await this.delivery.deliver({ kind: "phone_verification_otp", to: target, code: secret, expiresAt });
-    else if (channel === "email_link") await this.delivery.deliver({ kind: "password_recovery_link", to: target, link, expiresAt });
-    else await this.delivery.deliver({ kind: "password_recovery_otp", to: target, code: secret, expiresAt });
+    const delivery = await this.deliveryFor(projectId);
+    if (purpose === "verify_email" && channel === "email_link") await delivery.deliver({ kind: "email_verification_link", to: target, link, expiresAt });
+    else if (purpose === "verify_email") await delivery.deliver({ kind: "email_verification_otp", to: target, code: secret, expiresAt });
+    else if (purpose === "verify_phone") await delivery.deliver({ kind: "phone_verification_otp", to: target, code: secret, expiresAt });
+    else if (channel === "email_link") await delivery.deliver({ kind: "password_recovery_link", to: target, link, expiresAt });
+    else await delivery.deliver({ kind: "password_recovery_otp", to: target, code: secret, expiresAt });
     await this.store.recordEvent({ projectId, runtimeUserId: user.id, eventType: purpose === "recover_password" ? "runtime.recovery" : "runtime.verification", outcome: "success", ipHash: context.ipHash, metadata: { action: "challenge_sent", channel } });
   }
 

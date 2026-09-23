@@ -17,6 +17,8 @@ describe("delivery integration security", () => {
       return new Response("{}", { status: 200 });
     });
     const adapter = new ResendDeliveryAdapter({ provider: "resend", from: "no-reply@example.com", apiKey: "re_test" }, request);
+    expect(adapter.supportsChannel("email")).toBe(true);
+    expect(adapter.supportsChannel("phone")).toBe(false);
     await adapter.deliver({ kind: "email_verification_otp", to: "person@example.com", code: "123456", expiresAt: new Date("2026-01-01T00:00:00Z") });
     expect(request).toHaveBeenCalledWith("https://api.resend.com/emails", expect.objectContaining({ method: "POST" }));
     expect(body).toContain("no-reply@example.com");

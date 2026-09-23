@@ -7,6 +7,7 @@ export type DeliveryMessage =
 
 export interface RuntimeDeliveryAdapter {
   readonly available: boolean;
+  supportsChannel?(channel: "email" | "phone"): boolean;
   deliver(message: DeliveryMessage): Promise<void>;
 }
 

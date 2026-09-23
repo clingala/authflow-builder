@@ -9,6 +9,7 @@ import { EmptyProperties, FieldProperties } from "./field-properties";
 import { GeneralPanel } from "./general-panel";
 import { LoginPanel } from "./login-panel";
 import { IntegrationsPanel } from "./integrations-panel";
+import type { BuilderDeliveryConnection } from "./delivery-integrations-panel";
 import { RecoveryPanel } from "./recovery-panel";
 import { RegistrationPanel } from "./registration-panel";
 import type { BuilderApplicationClient, BuilderProject, BuilderSection, PreviewDevice } from "./types";
@@ -32,7 +33,7 @@ const previewScreens: Array<{ id: AuthFlowScreen; label: string }> = [
   { id: "recovery", label: "Recovery" },
 ];
 
-export function AuthFlowBuilder({ project, applicationClients = [] }: { project: BuilderProject; applicationClients?: BuilderApplicationClient[] }) {
+export function AuthFlowBuilder({ project, applicationClients = [], deliveryConnection = null }: { project: BuilderProject; applicationClients?: BuilderApplicationClient[]; deliveryConnection?: BuilderDeliveryConnection }) {
   const builder = useAuthBuilder(project);
   const [section, setSection] = useState<BuilderSection>("general");
   const [selectedFieldId, setSelectedFieldId] = useState<string>();
@@ -109,7 +110,7 @@ export function AuthFlowBuilder({ project, applicationClients = [] }: { project:
             {section === "verification" ? <VerificationPanel config={builder.draft} update={builder.update} /> : null}
             {section === "recovery" ? <RecoveryPanel config={builder.draft} update={builder.update} /> : null}
             {section === "branding" ? <BrandingPanel config={builder.draft} update={builder.update} /> : null}
-            {section === "integrations" ? <IntegrationsPanel projectId={project.id} initialClients={applicationClients} /> : null}
+            {section === "integrations" ? <IntegrationsPanel projectId={project.id} initialClients={applicationClients} initialDeliveryConnection={deliveryConnection} /> : null}
           </div>
         </aside>
 
