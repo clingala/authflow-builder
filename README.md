@@ -48,7 +48,7 @@ pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
-Read [the full MVP plan](docs/MVP-PLAN.md), the [language-independent platform guide](docs/PLATFORM.md), the [platform OpenAPI contract](docs/openapi.platform.yaml), the [deployment guide](docs/DEPLOYMENT.md), the [operations runbook](docs/RUNBOOK.md), the [Phase 15 delivery note](docs/PHASE-15.md), and the [security policy](SECURITY.md).
+Read [the full MVP plan](docs/MVP-PLAN.md), the [language-independent platform guide](docs/PLATFORM.md), the [framework-neutral integration guide](docs/INTEGRATION-GUIDE.md), the [platform OpenAPI contract](docs/openapi.platform.yaml), the [deployment guide](docs/DEPLOYMENT.md), the [operations runbook](docs/RUNBOOK.md), the [production launch checklist](docs/LAUNCH-CHECKLIST.md), the [open-source release guide](docs/OPEN-SOURCE-RELEASE.md), the [Phase 15 delivery note](docs/PHASE-15.md), and the [security policy](SECURITY.md).
 
 ## Security posture
 
@@ -57,6 +57,15 @@ This repository does not contain fake authentication success paths. Email/passwo
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing a change. Security vulnerabilities must be reported privately according to [SECURITY.md](SECURITY.md), never through a public issue.
+
+## Integrating other applications
+
+AuthFlow Builder is language independent. Applications integrate over the
+standard OAuth 2.0 / OpenID Connect Authorization Code flow with S256 PKCE,
+and can load their presentation configuration through the public platform API.
+Start with the [integration guide](docs/INTEGRATION-GUIDE.md); it includes
+patterns for JavaScript, React/Next.js, Java/Spring Boot, native mobile, and
+other standards-compliant stacks.
 
 ## License
 
