@@ -25,6 +25,25 @@ function safeConnectOrigin(rawIssuer) {
   }
 }
 
+function readCookie(request, name) {
+  const prefix = `${name}=`;
+  return (request.headers.cookie || "").split(";").map((part) => part.trim()).find((part) => part.startsWith(prefix))?.slice(prefix.length);
+}
+
+function serializeOriginCookie(name, origin) {
+  return `${name}=${encodeURIComponent(origin)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=600`;
+}
+
+function cookieOrigin(request, name) {
+  const value = readCookie(request, name);
+  if (!value) return undefined;
+  try {
+    return safeConnectOrigin(decodeURIComponent(value));
+  } catch {
+    return undefined;
+  }
+}
+
 createServer(async (request, response) => {
   try {
     const requestUrl = new URL(request.url || "/", `http://${request.headers.host || "localhost"}`);
@@ -36,13 +55,26 @@ createServer(async (request, response) => {
       return;
     }
     const body = await readFile(join(root, filename));
-    const connectOrigin = safeConnectOrigin(requestUrl.searchParams.get("issuer")) || "http://localhost:4444";
-    response.writeHead(200, {
+    const requestedIssuer = safeConnectOrigin(requestUrl.searchParams.get("issuer"));
+    const requestedTransportOrigin = safeConnectOrigin(requestUrl.searchParams.get("transport_origin"));
+    const cookieIssuer = cookieOrigin(request, "authflow_pkce_issuer");
+    const cookieTransportOrigin = cookieOrigin(request, "authflow_pkce_transport_origin");
+    const connectOrigin = requestedTransportOrigin || cookieTransportOrigin || requestedIssuer || cookieIssuer || "http://localhost:4444";
+    const headers = {
       "Content-Type": types[extname(filename)] || "application/octet-stream",
       "Cache-Control": "no-store",
       "Content-Security-Policy": `default-src 'self'; connect-src ${connectOrigin} http://127.0.0.1:4444; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`,
       "Referrer-Policy": "no-referrer",
       "X-Content-Type-Options": "nosniff",
+    };
+    if (requestedIssuer) {
+      headers["Set-Cookie"] = [
+        serializeOriginCookie("authflow_pkce_issuer", requestedIssuer),
+        serializeOriginCookie("authflow_pkce_transport_origin", requestedTransportOrigin || requestedIssuer),
+      ];
+    }
+    response.writeHead(200, {
+      ...headers,
     });
     response.end(body);
   } catch (error) {

@@ -1,4 +1,4 @@
-import { oauthConfig } from "./config.js";
+import { oauthConfig, persistRuntimeConfig } from "./config.js";
 import { createPkcePair, randomUrlSafe, requireMatchingState } from "./pkce.js";
 
 const elements = {
@@ -60,6 +60,7 @@ async function beginSignIn() {
     sessionStorage.setItem(storageKeys.state, state);
     sessionStorage.setItem(storageKeys.nonce, nonce);
     sessionStorage.setItem(storageKeys.clientId, clientId);
+    persistRuntimeConfig(oauthConfig);
 
     const authorization = new URL(discovery.authorization_endpoint);
     authorization.search = new URLSearchParams({
