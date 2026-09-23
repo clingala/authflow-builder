@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createDefaultAuthFlowConfig } from "@/modules/auth-config";
 import { RuntimeChallengeAttemptsExceededError, RuntimeChallengeExpiredError, RuntimeChallengeInvalidError, RuntimeChallengeService } from "./challenge-service";
-import type { DeliveryMessage, RuntimeDeliveryAdapter } from "./delivery";
+import { RuntimeDeliveryUnavailableError, type DeliveryMessage, type RuntimeDeliveryAdapter } from "./delivery";
 import type { PasswordHasher, RuntimeAuthEventInput, RuntimeAuthStore, RuntimeChallenge, RuntimeProject, RuntimeSession, RuntimeUser } from "./contracts";
 
 const projectId = "11111111-1111-4111-8111-111111111111";
@@ -46,10 +46,23 @@ function setup() {
   const hasher: PasswordHasher = { hash: vi.fn(async (password) => `scrypt:${password}`), verify: vi.fn() };
   let now = new Date("2026-09-20T18:00:00.000Z");
   const service = new RuntimeChallengeService(store, hasher, delivery, "test-secret-at-least-32-characters", "https://auth.example.test", () => now);
-  return { store, messages, hasher, service, advance: (milliseconds: number) => { now = new Date(now.getTime() + milliseconds); } };
+  return { store, messages, delivery, hasher, service, advance: (milliseconds: number) => { now = new Date(now.getTime() + milliseconds); } };
 }
 
 describe("RuntimeChallengeService", () => {
+  it("audits a failed provider send without secrets and allows a fresh retry", async () => {
+    const { service, store, delivery, messages } = setup();
+    vi.mocked(delivery.deliver).mockRejectedValueOnce(new Error("provider response included a secret"));
+
+    await expect(service.requestVerification(projectId, { identifier: store.user.email, channel: "email" }, {})).rejects.toBeInstanceOf(RuntimeDeliveryUnavailableError);
+    expect(store.challenges[0]?.consumedAt).not.toBeNull();
+    expect(store.events).toEqual([expect.objectContaining({ outcome: "failure", metadata: { action: "challenge_delivery_failed", channel: "email_otp" } })]);
+    expect(JSON.stringify(store.events)).not.toContain("provider response");
+    expect(JSON.stringify(store.events)).not.toContain(store.user.email);
+
+    await expect(service.requestVerification(projectId, { identifier: store.user.email, channel: "email" }, {})).resolves.toEqual({ accepted: true });
+    expect(messages).toHaveLength(1);
+  });
   it("stores only a hash, limits invalid attempts, and consumes verification codes once", async () => {
     const { service, store, messages } = setup();
     await service.requestVerification(projectId, { identifier: store.user.email, channel: "email" }, {});

@@ -42,5 +42,6 @@ reconnected; plan a re-encryption migration before key rotation.
 
 Before production enablement, exercise real email delivery and recovery with
 a verified domain, plus OTP expiry, rate limits, and tenant isolation in a
-staging environment. Provider delivery failures still need dedicated audit
-events and operational alerting.
+staging environment. Provider delivery failures create redacted runtime audit
+events and invalidate the unsent challenge so users can retry. Operational
+alerting for elevated provider failures is still required before public launch.
