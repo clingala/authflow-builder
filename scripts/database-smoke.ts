@@ -106,7 +106,7 @@ async function main() {
   }
 }
 
-main().catch((error: unknown) => {
-  console.error(error);
+main().catch(() => {
+  console.error(JSON.stringify({ event: "database_smoke", status: "error" }));
   process.exitCode = 1;
 });

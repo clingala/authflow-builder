@@ -9,8 +9,9 @@ async function main() {
 }
 
 main()
-  .catch((error) => {
-    console.error("Auth retention cleanup failed", error instanceof Error ? error.message : "Unknown error");
+  .catch(() => {
+    // Database errors can contain connection details. Keep cron logs aggregate-only.
+    console.error(JSON.stringify({ event: "auth_retention_cleanup", status: "error" }));
     process.exitCode = 1;
   })
   .finally(async () => {

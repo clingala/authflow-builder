@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { ForbiddenError, requireSameOrigin } from "./_shared";
+import { errorResponse, ForbiddenError, requireSameOrigin } from "./_shared";
 
 describe("requireSameOrigin", () => {
   it("accepts a matching request origin", () => {
@@ -30,5 +30,18 @@ describe("requireSameOrigin", () => {
     });
     expect(() => requireSameOrigin(missing)).toThrow(ForbiddenError);
     expect(() => requireSameOrigin(crossSite)).toThrow(ForbiddenError);
+  });
+});
+
+describe("errorResponse", () => {
+  it("does not log details from unexpected exceptions", () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      const response = errorResponse(new Error("secret-token-sentinel"));
+      expect(response.status).toBe(500);
+      expect(JSON.stringify(log.mock.calls)).not.toContain("secret-token-sentinel");
+    } finally {
+      log.mockRestore();
+    }
   });
 });

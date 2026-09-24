@@ -21,7 +21,7 @@ export async function GET(request: NextRequest, context: Context) {
   } catch (error) {
     if (error instanceof ApplicationClientOriginError) return NextResponse.json({ data: null, error: { code: "ORIGIN_NOT_ALLOWED", message: "This origin is not registered for the application client" } }, { status: 403, headers: { "Cache-Control": "no-store", "Vary": "Origin" } });
     if (error instanceof ApplicationClientNotFoundError || error instanceof ZodError) return NextResponse.json({ data: null, error: { code: "NOT_FOUND", message: "Application client not found" } }, { status: 404, headers: { "Cache-Control": "no-store" } });
-    console.error("Public client configuration error", error);
+    console.error(JSON.stringify({ event: "public_client_configuration_error" }));
     return NextResponse.json({ data: null, error: { code: "INTERNAL_ERROR", message: "Configuration could not be loaded" } }, { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 }

@@ -9,9 +9,14 @@ describe("runtime authentication responses", () => {
   });
 
   it("marks error responses private and non-cacheable", () => {
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
-    const response = runtimeErrorResponse(new Error("test failure"));
-    expect(response.status).toBe(500);
-    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      const response = runtimeErrorResponse(new Error("secret-token-sentinel"));
+      expect(response.status).toBe(500);
+      expect(response.headers.get("cache-control")).toBe("private, no-store");
+      expect(JSON.stringify(log.mock.calls)).not.toContain("secret-token-sentinel");
+    } finally {
+      log.mockRestore();
+    }
   });
 });

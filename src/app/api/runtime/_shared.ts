@@ -91,7 +91,7 @@ export function runtimeErrorResponse(error: unknown) {
   if (error instanceof ZodError) {
     return NextResponse.json({ data: null, error: { code: "VALIDATION_FAILED", message: "The request is invalid" } }, { status: 400, headers: { "Cache-Control": "private, no-store" } });
   }
-  console.error("Unhandled runtime authentication error", error);
+  console.error(JSON.stringify({ event: "runtime_auth_unhandled_error" }));
   return errorJson(500, "INTERNAL_ERROR", "The authentication request could not be completed");
 }
 

@@ -1,0 +1,21 @@
+# syntax=docker/dockerfile:1.7
+# One-shot image for Railway cron services. Never expose a port or run migrations.
+FROM node:24.11.0-alpine
+ENV PNPM_HOME="/pnpm" \
+    PATH="/pnpm:$PATH" \
+    NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1
+RUN corepack enable && corepack prepare pnpm@11.19.0 --activate
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY prisma ./prisma
+COPY prisma.config.ts ./
+# tsx is required by the maintenance scripts, so retain devDependencies here.
+RUN pnpm install --frozen-lockfile --prod=false
+COPY . .
+RUN addgroup --system --gid 1001 authflow && adduser --system --uid 1001 -G authflow authflow \
+    && chown -R authflow:authflow /app
+USER authflow
+
+CMD ["pnpm", "db:cleanup"]

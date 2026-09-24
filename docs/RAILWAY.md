@@ -71,3 +71,34 @@ After deployment:
 Railway health checks gate deployment activation but are not continuous
 monitoring. Add an independent uptime check and alerts before calling the
 environment production-ready.
+
+## Scheduled maintenance services
+
+Create two additional GitHub-backed Railway services from the same reviewed
+`main` commit. Do not expose public networking. For both, select the
+**Dockerfile** builder and set **Dockerfile Path** to
+`/Dockerfile.maintenance`. The image is a one-shot process and deliberately
+does not run the web server or migrations. Configure `DATABASE_URL` as a
+Railway reference to `authflow-postgres.DATABASE_URL` (prefer separate,
+least-privileged database roles when available). Do not copy a database URL
+into source control or a job log. Set **Restart Policy** to **Never** so a
+failed run is observable rather than retried in a tight loop.
+
+| Service | Start command | Cron schedule (UTC) | Purpose |
+| --- | --- | --- | --- |
+| `authflow-delivery-monitor` | `pnpm delivery:check` | `*/5 * * * *` | Aggregate delivery failures; exits 2 at the threshold and 1 if the check fails. |
+| `authflow-retention-cleanup` | `pnpm db:cleanup` | `0 3 * * *` | Delete expired authentication data according to the retention implementation. |
+
+The monitor defaults to a 15-minute window and five failures; optional
+`DELIVERY_FAILURE_WINDOW_MINUTES` and `DELIVERY_FAILURE_ALERT_COUNT` must be
+tuned to traffic. Route nonzero job exits and missing expected runs to an
+operator-controlled alert destination. A scheduled service alone is **not**
+alerting. Verify an initial successful run of each service and an alert test
+before checking off the launch gate. Railway cron schedules use UTC, and a
+still-running execution can cause the next scheduled execution to be skipped.
+
+New Railway services cannot opt into the legacy `railway.json` config-as-code
+flow. Configure these settings on the new services, then manage a future
+migration of existing legacy configuration to Railway Infrastructure as Code
+before the announced legacy end date. Do not attach the web service's health
+check or migration pre-deploy command to a cron service.

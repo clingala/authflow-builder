@@ -15,8 +15,8 @@ export async function POST(request: NextRequest) {
     const token = request.cookies.get(runtimeSessionCookieName(context.client.projectId))?.value;
     const redirectTo = await service.acceptLogin(challenge, token);
     return Response.json({ data: { redirectTo }, error: null }, { headers: { "Cache-Control": "no-store" } });
-  } catch (error) {
-    console.error("OAuth login completion failed", error);
+  } catch {
+    console.error(JSON.stringify({ event: "oauth_login_completion_error" }));
     return Response.json({ data: null, error: { code: "OAUTH_LOGIN_FAILED", message: "The OAuth login could not be completed" } }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }
 }

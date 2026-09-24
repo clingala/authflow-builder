@@ -120,7 +120,7 @@ export function errorResponse(error: unknown) {
     );
   }
 
-  console.error("Unhandled API error", error);
+  console.error(JSON.stringify({ event: "api_unhandled_error" }));
   return NextResponse.json(
     { data: null, error: { code: "INTERNAL_ERROR", message: "An unexpected error occurred" } },
     { status: 500 },

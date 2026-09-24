@@ -39,6 +39,13 @@ window is 15 minutes and the default threshold is 5 failures; tune with
 `DELIVERY_FAILURE_WINDOW_MINUTES` and `DELIVERY_FAILURE_ALERT_COUNT` after
 reviewing normal traffic. Use a read-only database identity for this job.
 
+The retention cleanup job is destructive by design: it deletes only expired
+authentication records selected by `cleanupExpiredAuthData`. It needs a
+write-capable identity restricted to those tables. Review retention settings
+and test a restore before enabling it in production. Its log output is
+aggregate-only. An absent expected run, a nonzero exit, or missing operator
+notification is an incident even if the web app remains healthy.
+
 ### Google OAuth fails
 
 Verify exact callback URLs, client status, server clock and provider availability. OAuth state/PKCE failures must remain generic to users. Do not bypass state verification or reuse consumed transactions.
