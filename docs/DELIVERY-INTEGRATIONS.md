@@ -45,3 +45,14 @@ a verified domain, plus OTP expiry, rate limits, and tenant isolation in a
 staging environment. Provider delivery failures create redacted runtime audit
 events and invalidate the unsent challenge so users can retry. Operational
 alerting for elevated provider failures is still required before public launch.
+
+The read-only `pnpm delivery:check` command emits one redacted JSON summary of
+challenge delivery in the last 15 minutes. It exits 2 when failures reach 5,
+1 when the check itself fails, and 0 otherwise. Set
+`DELIVERY_FAILURE_WINDOW_MINUTES` and `DELIVERY_FAILURE_ALERT_COUNT` to tune
+these bounded values. Run it from a separately scheduled maintenance job with
+read-only access to the event table and route nonzero exits to an operator.
+The output contains only aggregate counts, never project IDs, addresses, OTPs,
+or provider responses. A scheduled job and notification destination still
+must be configured on the deployment platform; this command does not create
+an alert by itself.

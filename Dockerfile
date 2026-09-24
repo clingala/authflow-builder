@@ -23,7 +23,8 @@ FROM dependencies AS migrate
 COPY . .
 CMD ["pnpm", "db:deploy"]
 
-# Use this target from a scheduler for retention cleanup.
+# Use this target from a scheduler for retention cleanup, or override its
+# command with `pnpm delivery:check` for the read-only delivery monitor.
 FROM dependencies AS maintenance
 COPY . .
 CMD ["pnpm", "db:cleanup"]

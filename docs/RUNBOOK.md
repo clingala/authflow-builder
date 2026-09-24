@@ -30,6 +30,15 @@ Do not start the new application version. Capture sanitized migration output, in
 
 The application intentionally returns delivery unavailable rather than fake success. Verify webhook health and credentials, inspect provider status, and communicate that verification/recovery delivery is degraded. Never log or manually transmit OTP/reset secrets.
 
+Run `pnpm delivery:check` from a scheduled maintenance job to assess recent
+delivery failures without exposing tenant or recipient data. Exit code 2 means
+the configured failure threshold was reached; exit code 1 means the monitor
+itself failed (including database access). Alert on either nonzero result, and
+do not treat a failed monitor as proof that delivery is healthy. The default
+window is 15 minutes and the default threshold is 5 failures; tune with
+`DELIVERY_FAILURE_WINDOW_MINUTES` and `DELIVERY_FAILURE_ALERT_COUNT` after
+reviewing normal traffic. Use a read-only database identity for this job.
+
 ### Google OAuth fails
 
 Verify exact callback URLs, client status, server clock and provider availability. OAuth state/PKCE failures must remain generic to users. Do not bypass state verification or reuse consumed transactions.

@@ -27,6 +27,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:cleanup": "tsx scripts/cleanup-expired-auth-data.ts",
+    "delivery:check": "tsx scripts/check-delivery-health.ts",
     "db:smoke": "tsx scripts/database-smoke.ts",
     "db:studio": "prisma studio",
     "check": "pnpm db:validate && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
