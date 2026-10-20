@@ -33,16 +33,16 @@
     "check": "pnpm db:validate && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
-    "@better-auth/prisma-adapter": "1.7.5",
-    "@prisma/adapter-pg": "7.10.0",
-    "@prisma/client": "7.10.0",
-    "better-auth": "1.7.5",
-    "dotenv": "18.0.1",
-    "next": "16.3.5",
-    "pg": "8.23.0",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "zod": "4.6.5"
+    "@better-auth/prisma-adapter": "1.7.10",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "better-auth": "1.7.10",
+    "dotenv": "18.0.8",
+    "next": "16.4.2",
+    "pg": "8.23.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
